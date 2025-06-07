@@ -1,9 +1,5 @@
 <?php
-$conexion = new mysqli("localhost", "root", "", "ads_manager_pro");
-
-if ($conexion->connect_error) {
-  die("ConexiÃ³n fallida: " . $conexion->connect_error);
-}
+include 'config.php';
 
 $fecha = $_POST['fecha'];
 $nombre = $_POST['nombre_cliente'];
@@ -15,7 +11,8 @@ $sql = "INSERT INTO clientes (fecha, nombre_cliente, presupuesto, objetivo, mane
         VALUES ('$fecha', '$nombre', '$presupuesto', '$obj', '$manager')";
 
 if ($conexion->query($sql) === TRUE) {
-  header("Location: clientes.html?exito=1");
+  // Redirigir con parámetro de éxito
+  header("Location: clientes.html?registro=exitoso");
 } else {
   echo "Error: " . $sql . "<br>" . $conexion->error;
 }

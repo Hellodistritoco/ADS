@@ -7,33 +7,74 @@
   <link href="https://cdn.materialdesignicons.com/7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
   <style>
     body { background-color: #121212; color: white; }
-    .form-control, .form-select { background-color: #1e1e1e; color: white; border: none; }
+    .form-control, .form-select { background-color: #1e1e1e; color: white; border: 1px solid #444; }
     .form-label { color: #bbb; }
+    .readonly-field { background-color: #2a2a2a !important; color: #ccc; }
+    
+    /* Estilos para el popup */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: #1e1e1e;
+      border: 2px solid #28a745;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      animation: popupSlide 0.3s ease-in-out;
+    }
+    @keyframes popupSlide {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .popup-icon {
+      font-size: 3rem;
+      color: #28a745;
+      margin-bottom: 15px;
+    }
+    .popup-title {
+      color: #28a745;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
   <div class="container py-5">
     <h2><i class="mdi mdi-lightbulb-on-outline"></i> Estrategia</h2>
 
-    <?php
-      include("config.php");
-      $resultado = $conexion->query("SELECT id, nombre_cliente FROM clientes");
-    ?>
-
     <form action="guardar_estrategia.php" method="POST" class="row g-3 mt-4">
       <div class="col-md-6">
-        <label class="form-label">Nombre del Cliente</label>
-        <select name="cliente_id" class="form-select" required>
+        <label class="form-label">Seleccionar Cliente</label>
+        <select name="cliente_id" id="clienteSelect" class="form-select" required onchange="cargarDatosCliente()">
           <option value="">Selecciona un cliente</option>
-          <?php while ($fila = $resultado->fetch_assoc()) { ?>
-            <option value="<?= $fila['id'] ?>"><?= $fila['nombre_cliente'] ?></option>
-          <?php } ?>
         </select>
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Presupuesto</label>
-        <input type="number" class="form-control" name="presupuesto" required>
+        <label class="form-label">Presupuesto del Cliente</label>
+        <input type="number" class="form-control readonly-field" id="presupuestoCliente" name="presupuesto_cliente" readonly>
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label">Objetivo del Cliente</label>
+        <textarea class="form-control readonly-field" id="objetivoCliente" name="objetivo_cliente" rows="2" readonly></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Presupuesto para la Estrategia</label>
+        <input type="number" class="form-control" name="presupuesto_estrategia" required>
       </div>
 
       <div class="col-md-6">
@@ -43,32 +84,72 @@
 
       <div class="col-md-6">
         <label class="form-label">Tipo de Estrategia</label>
-        <input type="text" class="form-control" name="tipo_estrategia" required>
-      </div>
-
-      <div class="col-md-12">
-        <label class="form-label">Objetivos de la Estrategia</label>
-        <textarea class="form-control" name="objetivos" rows="3" required></textarea>
+        <select class="form-select" name="tipo_estrategia" required>
+          <option value="">Selecciona tipo</option>
+          <option value="Brand Awareness">Brand Awareness</option>
+          <option value="Lead Generation">Lead Generation</option>
+          <option value="Conversiones">Conversiones</option>
+          <option value="Traffic">Traffic</option>
+          <option value="Engagement">Engagement</option>
+          <option value="App Install">App Install</option>
+        </select>
       </div>
 
       <div class="col-md-6">
         <label class="form-label">Tipo de Campaña</label>
-        <input type="text" class="form-control" name="tipo_campana" required>
+        <select class="form-select" name="tipo_campana" required>
+          <option value="">Selecciona tipo</option>
+          <option value="Search">Search</option>
+          <option value="Display">Display</option>
+          <option value="Video">Video</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Social Media">Social Media</option>
+          <option value="Remarketing">Remarketing</option>
+        </select>
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label">Objetivos Específicos de la Estrategia</label>
+        <textarea class="form-control" name="objetivos_estrategia" rows="3" placeholder="Describe los objetivos específicos para esta estrategia..." required></textarea>
       </div>
 
       <div class="col-md-6">
         <label class="form-label">KPIs</label>
-        <input type="text" class="form-control" name="kpis" required>
+        <input type="text" class="form-control" name="kpis" placeholder="Ej: CTR, CPC, ROAS, CPA" required>
       </div>
 
       <div class="col-md-6">
         <label class="form-label">Plataformas</label>
-        <input type="text" class="form-control" name="plataformas" required>
+        <select class="form-select" name="plataformas" required>
+          <option value="">Selecciona plataforma</option>
+          <option value="Google Ads">Google Ads</option>
+          <option value="Facebook Ads">Facebook Ads</option>
+          <option value="Instagram Ads">Instagram Ads</option>
+          <option value="LinkedIn Ads">LinkedIn Ads</option>
+          <option value="TikTok Ads">TikTok Ads</option>
+          <option value="YouTube Ads">YouTube Ads</option>
+          <option value="Multi-plataforma">Multi-plataforma</option>
+        </select>
       </div>
 
       <div class="col-md-6">
         <label class="form-label">Audiencia</label>
-        <input type="text" class="form-control" name="audiencia" required>
+        <input type="text" class="form-control" name="audiencia" placeholder="Ej: Mujeres 25-45, intereses en moda" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Fecha de Inicio</label>
+        <input type="date" class="form-control" name="fecha_inicio" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Fecha de Fin</label>
+        <input type="date" class="form-control" name="fecha_fin" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Responsable de la Estrategia</label>
+        <input type="text" class="form-control" name="responsable" required>
       </div>
 
       <div class="col-12">
@@ -78,5 +159,145 @@
       </div>
     </form>
   </div>
+
+  <!-- Popup de éxito -->
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+      <div class="popup-icon">
+        <i class="mdi mdi-check-circle"></i>
+      </div>
+      <div class="popup-title">¡ESTRATEGIA GUARDADA!</div>
+      <p class="text-light">La estrategia ha sido registrada correctamente.</p>
+      <div class="popup-buttons mt-3">
+        <button type="button" class="btn btn-primary me-2" onclick="crearNuevaEstrategia()">
+          <i class="mdi mdi-plus"></i> NUEVA ESTRATEGIA
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="cerrarPopup()">
+          <i class="mdi mdi-close"></i> CERRAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let clientes = [];
+
+    // Cargar clientes al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarClientes();
+      
+      // Verificar si hay parámetro de éxito en la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('exito') === '1') {
+        mostrarPopup();
+        // Limpiar la URL sin recargar la página
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      // Verificar si viene un cliente preseleccionado
+      const clienteId = urlParams.get('cliente_id');
+      if (clienteId) {
+        // Esperar a que se carguen los clientes y luego preseleccionar
+        setTimeout(() => {
+          preseleccionarCliente(clienteId);
+        }, 500);
+      }
+    });
+
+    // Función para cargar la lista de clientes
+    function cargarClientes() {
+      fetch('obtener_clientes.php')
+        .then(response => response.json())
+        .then(data => {
+          clientes = data;
+          const select = document.getElementById('clienteSelect');
+          
+          // Limpiar opciones existentes (excepto la primera)
+          select.innerHTML = '<option value="">Selecciona un cliente</option>';
+          
+          // Agregar clientes al select
+          data.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = cliente.nombre_cliente;
+            select.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar clientes:', error);
+          alert('Error al cargar la lista de clientes');
+        });
+    }
+
+    // Función para cargar datos del cliente seleccionado
+    function cargarDatosCliente() {
+      const clienteId = document.getElementById('clienteSelect').value;
+      
+      if (clienteId === '') {
+        // Limpiar campos si no hay cliente seleccionado
+        document.getElementById('presupuestoCliente').value = '';
+        document.getElementById('objetivoCliente').value = '';
+        return;
+      }
+
+      // Buscar el cliente en el array
+      const cliente = clientes.find(c => c.id == clienteId);
+      
+      if (cliente) {
+        document.getElementById('presupuestoCliente').value = cliente.presupuesto;
+        document.getElementById('objetivoCliente').value = cliente.objetivo;
+      }
+    }
+
+    // Funciones para el popup
+    function mostrarPopup() {
+      document.getElementById('popupOverlay').style.display = 'flex';
+    }
+
+    function cerrarPopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function crearNuevaEstrategia() {
+      // Limpiar el formulario
+      document.querySelector('form').reset();
+      document.getElementById('presupuestoCliente').value = '';
+      document.getElementById('objetivoCliente').value = '';
+      cerrarPopup();
+    }
+
+    // Función para preseleccionar un cliente
+    function preseleccionarCliente(clienteId) {
+      const select = document.getElementById('clienteSelect');
+      select.value = clienteId;
+      
+      // Cargar automáticamente los datos del cliente
+      cargarDatosCliente();
+      
+      // Scroll suave al formulario
+      select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Highlight del campo seleccionado
+      select.style.border = '2px solid #28a745';
+      setTimeout(() => {
+        select.style.border = '1px solid #444';
+      }, 2000);
+    }
+
+    // Cerrar popup al hacer clic fuera del contenido
+    document.getElementById('popupOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        cerrarPopup();
+      }
+    });
+
+    // Cerrar popup con tecla Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        cerrarPopup();
+      }
+    });
+  </script>
 </body>
 </html>

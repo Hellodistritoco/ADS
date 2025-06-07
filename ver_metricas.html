@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ver Métricas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.materialdesignicons.com/7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background-color: #121212; 
+      color: white; 
+    }
+    .card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+    }
+    .metrics-card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.2s;
+    }
+    .metrics-card:hover {
+      transform: translateY(-2px);
+      border-color: #0d6efd;
+    }
+    .metrics-title {
+      color: #0dcaf0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .metrics-info {
+      color: #bbb;
+      margin: 5px 0;
+    }
+    .table-dark { background-color: #1e1e1e; }
+    .table-dark td, .table-dark th { border-color: #444; }
+    .table-responsive {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .form-control, .form-select {
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      color: white;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: #2a2a2a;
+      border-color: #0d6efd;
+      color: white;
+    }
+    .loading {
+      text-align: center;
+      padding: 50px;
+    }
+    .no-data {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+    }
+    .file-badge {
+      background-color: #28a745;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+    .date-badge {
+      background-color: #0dcaf0;
+      color: black;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="mdi mdi-chart-line"></i> Métricas de Campañas</h2>
+      <div>
+        <a href="metricas.html" class="btn btn-success me-2">
+          <i class="mdi mdi-upload"></i> Subir Métricas
+        </a>
+        <a href="ver_estrategias.html" class="btn btn-secondary me-2">
+          <i class="mdi mdi-lightbulb-multiple-outline"></i> Estrategias
+        </a>
+        <a href="index.html" class="btn btn-secondary">
+          <i class="mdi mdi-home"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Mensaje de confirmación -->
+    <div id="mensajeExito" class="alert alert-success d-none" role="alert">
+      <i class="mdi mdi-check-circle"></i>
+      <strong>¡Métricas cargadas exitosamente!</strong> 
+      Aquí puedes ver todas las métricas de la estrategia seleccionada.
+      <button type="button" class="btn-close" onclick="cerrarMensaje()"></button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Filtrar por Cliente</label>
+            <select id="filtroCliente" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Todos los clientes</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Filtrar por Estrategia</label>
+            <select id="filtroEstrategia" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Todas las estrategias</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Filtrar por Plataforma</label>
+            <select id="filtroPlataforma" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Todas las plataformas</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3">Cargando métricas...</p>
+    </div>
+
+    <!-- Lista de Métricas -->
+    <div id="listaMetricas">
+      <!-- Las métricas se cargan aquí -->
+    </div>
+
+    <!-- Sin datos -->
+    <div id="sinDatos" class="no-data" style="display: none;">
+      <i class="mdi mdi-chart-bar" style="font-size: 4rem; color: #666;"></i>
+      <h4>No hay métricas registradas</h4>
+      <p>Comienza subiendo tu primer archivo de métricas</p>
+      <a href="metricas.html" class="btn btn-primary">
+        <i class="mdi mdi-upload"></i> Subir Métricas
+      </a>
+    </div>
+  </div>
+
+  <!-- Modal para ver datos completos -->
+  <div class="modal fade" id="datosModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content bg-dark">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-white" id="modalTitle"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="modalContent" class="table-responsive">
+            <!-- Contenido dinámico -->
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" onclick="descargarCSV()">
+            <i class="mdi mdi-download"></i> Descargar CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let todasLasMetricas = [];
+    let metricasFiltradas = [];
+    let metricaActual = null;
+
+    // Cargar datos al inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarMetricas();
+      
+      // Verificar si viene filtro por cliente/estrategia
+      const urlParams = new URLSearchParams(window.location.search);
+      const clienteId = urlParams.get('cliente_id');
+      const estrategiaId = urlParams.get('estrategia_id');
+      
+      if (clienteId || estrategiaId) {
+        setTimeout(() => {
+          if (clienteId) {
+            // Buscar el nombre del cliente por ID
+            const cliente = todasLasMetricas.find(m => m.cliente_id == clienteId);
+            if (cliente) {
+              document.getElementById('filtroCliente').value = cliente.cliente_nombre;
+            }
+          }
+          if (estrategiaId) {
+            // Buscar el nombre de la estrategia por ID
+            const estrategia = todasLasMetricas.find(m => m.estrategia_id == estrategiaId);
+            if (estrategia) {
+              document.getElementById('filtroEstrategia').value = estrategia.estrategia_nombre;
+            }
+          }
+          filtrarMetricas();
+          
+          // Mostrar mensaje de confirmación si viene de subida exitosa
+          if (clienteId && estrategiaId) {
+            setTimeout(() => {
+              document.getElementById('mensajeExito').classList.remove('d-none');
+              // Auto-ocultar después de 5 segundos
+              setTimeout(() => {
+                cerrarMensaje();
+              }, 5000);
+            }, 500);
+          }
+        }, 1000);
+      }
+    });
+
+    // Cargar todas las métricas
+    function cargarMetricas() {
+      fetch('obtener_metricas.php')
+        .then(response => response.json())
+        .then(data => {
+          todasLasMetricas = data;
+          metricasFiltradas = data;
+          
+          document.getElementById('loading').style.display = 'none';
+          
+          if (data.length === 0) {
+            document.getElementById('sinDatos').style.display = 'block';
+          } else {
+            llenarFiltros(data);
+            mostrarMetricas(data);
+          }
+        })
+        .catch(error => {
+          console.error('Error al cargar métricas:', error);
+          document.getElementById('loading').style.display = 'none';
+          alert('Error al cargar las métricas');
+        });
+    }
+
+    // Llenar filtros dinámicamente
+    function llenarFiltros(metricas) {
+      // Filtro de clientes
+      const clientes = [...new Set(metricas.map(m => m.cliente_nombre))];
+      const filtroCliente = document.getElementById('filtroCliente');
+      clientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente;
+        option.textContent = cliente;
+        filtroCliente.appendChild(option);
+      });
+
+      // Filtro de estrategias
+      const estrategias = [...new Set(metricas.map(m => m.estrategia_nombre))];
+      const filtroEstrategia = document.getElementById('filtroEstrategia');
+      estrategias.forEach(estrategia => {
+        const option = document.createElement('option');
+        option.value = estrategia;
+        option.textContent = estrategia;
+        filtroEstrategia.appendChild(option);
+      });
+
+      // Filtro de plataformas
+      const plataformas = [...new Set(metricas.map(m => m.plataforma))];
+      const filtroPlataforma = document.getElementById('filtroPlataforma');
+      plataformas.forEach(plataforma => {
+        const option = document.createElement('option');
+        option.value = plataforma;
+        option.textContent = plataforma;
+        filtroPlataforma.appendChild(option);
+      });
+    }
+
+    // Mostrar métricas
+    function mostrarMetricas(metricas) {
+      const container = document.getElementById('listaMetricas');
+      container.innerHTML = '';
+
+      metricas.forEach(metrica => {
+        const div = document.createElement('div');
+        div.className = 'metrics-card';
+        
+        // Parsear headers para mostrar información
+        const headers = JSON.parse(metrica.csv_headers);
+        const headersPreview = headers.slice(0, 5).join(', ') + (headers.length > 5 ? '...' : '');
+
+        div.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="metrics-title">${metrica.cliente_nombre} - ${metrica.estrategia_nombre}</div>
+            <div>
+              <span class="file-badge me-2">${metrica.total_filas} filas</span>
+              <span class="date-badge">${formatearFecha(metrica.fecha_creacion)}</span>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="metrics-info">
+                <i class="mdi mdi-tag"></i> 
+                <strong>Tipo:</strong> ${metrica.tipo_estrategia}
+              </div>
+              <div class="metrics-info">
+                <i class="mdi mdi-web"></i> 
+                <strong>Plataforma:</strong> ${metrica.plataforma}
+              </div>
+              <div class="metrics-info">
+                <i class="mdi mdi-calendar-range"></i> 
+                <strong>Período:</strong> ${formatearFecha(metrica.fecha_inicio)} - ${formatearFecha(metrica.fecha_fin)}
+              </div>
+              <div class="metrics-info">
+                <i class="mdi mdi-file-table"></i> 
+                <strong>Archivo:</strong> ${metrica.archivo_original}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="metrics-info">
+                <i class="mdi mdi-table-headers-eye"></i> 
+                <strong>Columnas:</strong> ${headers.length}
+              </div>
+              <div class="metrics-info">
+                <i class="mdi mdi-format-columns"></i> 
+                <strong>Campos:</strong> ${headersPreview}
+              </div>
+              ${metrica.descripcion ? `
+                <div class="metrics-info">
+                  <i class="mdi mdi-text"></i> 
+                  <strong>Descripción:</strong> ${metrica.descripcion}
+                </div>
+              ` : ''}
+              <div class="metrics-info">
+                <i class="mdi mdi-clock"></i> 
+                <strong>Subido:</strong> ${formatearFechaHora(metrica.fecha_creacion)}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <button class="btn btn-sm btn-primary me-2" onclick="verDatos(${metrica.id})">
+              <i class="mdi mdi-table-eye"></i> Ver Datos
+            </button>
+            <button class="btn btn-sm btn-success me-2" onclick="descargarArchivo('${metrica.ruta_archivo}', '${metrica.archivo_original}')">
+              <i class="mdi mdi-download"></i> Descargar
+            </button>
+            <button class="btn btn-sm btn-info me-2" onclick="verEstadisticas(${metrica.id})">
+              <i class="mdi mdi-chart-bar"></i> Estadísticas
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="analizarMetricas(${metrica.id})">
+              <i class="mdi mdi-chart-line"></i> Analizar
+            </button>
+          </div>
+        `;
+        
+        container.appendChild(div);
+      });
+    }
+
+    // Filtrar métricas
+    function filtrarMetricas() {
+      const cliente = document.getElementById('filtroCliente').value;
+      const estrategia = document.getElementById('filtroEstrategia').value;
+      const plataforma = document.getElementById('filtroPlataforma').value;
+      
+      metricasFiltradas = todasLasMetricas.filter(metrica => {
+        const coincideCliente = !cliente || metrica.cliente_nombre === cliente;
+        const coincideEstrategia = !estrategia || metrica.estrategia_nombre === estrategia;
+        const coincidePlataforma = !plataforma || metrica.plataforma === plataforma;
+        
+        return coincideCliente && coincideEstrategia && coincidePlataforma;
+      });
+      
+      mostrarMetricas(metricasFiltradas);
+    }
+
+    // Ver datos completos en modal
+    function verDatos(metricaId) {
+      const metrica = todasLasMetricas.find(m => m.id === metricaId);
+      if (!metrica) return;
+      
+      metricaActual = metrica;
+      
+      document.getElementById('modalTitle').textContent = 
+        `Datos: ${metrica.cliente_nombre} - ${metrica.estrategia_nombre}`;
+      
+      // Cargar datos del CSV
+      fetch(`obtener_datos_csv.php?metrica_id=${metricaId}`)
+        .then(response => response.json())
+        .then(data => {
+          mostrarTablaCompleta(data, JSON.parse(metrica.csv_headers));
+          new bootstrap.Modal(document.getElementById('datosModal')).show();
+        })
+        .catch(error => {
+          console.error('Error al cargar datos:', error);
+          alert('Error al cargar los datos del CSV');
+        });
+    }
+
+    // Mostrar tabla completa en el modal
+    function mostrarTablaCompleta(datos, headers) {
+      const container = document.getElementById('modalContent');
+      
+      let html = `
+        <table class="table table-dark table-striped table-bordered table-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              ${headers.map(header => `<th>${header}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      datos.forEach((fila, index) => {
+        const datosArray = JSON.parse(fila.datos_json);
+        html += `
+          <tr>
+            <td>${index + 1}</td>
+            ${datosArray.map(dato => `<td>${dato}</td>`).join('')}
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // Funciones de utilidad
+    function formatearFecha(fecha) {
+      if (!fecha) return '';
+      const f = new Date(fecha + 'T00:00:00');
+      return f.toLocaleDateString('es-ES');
+    }
+
+    function formatearFechaHora(fechaHora) {
+      if (!fechaHora) return '';
+      const f = new Date(fechaHora);
+      return f.toLocaleDateString('es-ES') + ' ' + f.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+    }
+
+    // Funciones de acción
+    function descargarArchivo(ruta, nombreOriginal) {
+      window.open(`descargar_csv.php?archivo=${encodeURIComponent(ruta)}&nombre=${encodeURIComponent(nombreOriginal)}`, '_blank');
+    }
+
+    function verEstadisticas(metricaId) {
+      alert('Funcionalidad de estadísticas en desarrollo para métrica ID: ' + metricaId);
+    }
+
+    function analizarMetricas(metricaId) {
+      alert('Funcionalidad de análisis en desarrollo para métrica ID: ' + metricaId);
+    }
+
+    function descargarCSV() {
+      if (metricaActual) {
+        descargarArchivo(metricaActual.ruta_archivo, metricaActual.archivo_original);
+      }
+    }
+
+    function cerrarMensaje() {
+      document.getElementById('mensajeExito').classList.add('d-none');
+    }
+  </script>
+</body>
+</html>

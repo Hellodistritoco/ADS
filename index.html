@@ -30,6 +30,7 @@
     }
     .btn-dashboard:hover {
       background-color: #383838;
+      color: white;
     }
     .img-banner {
       max-width: 100%;
@@ -37,82 +38,300 @@
       border-radius: 8px;
       margin: 20px 0;
     }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+    .stats-card:hover {
+      transform: translateY(-3px);
+    }
+    .stats-card .btn-light {
+      background-color: rgba(255, 255, 255, 0.9);
+      border: none;
+      color: #333;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .stats-card .btn-light:hover {
+      background-color: white;
+      color: #667eea;
+      transform: scale(1.05);
+    }
+    .quick-actions {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border: none;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div class="container py-4">
-    <h1 class="mb-4"><i class="mdi mdi-view-dashboard"></i> Dashboard</h1>
+    <!-- Header con botón de refrescar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1><i class="mdi mdi-view-dashboard"></i> Dashboard - Ads Manager Pro</h1>
+      <button class="btn btn-outline-primary" onclick="refrescarEstadisticas()">
+        <i class="mdi mdi-refresh"></i> Actualizar
+      </button>
+    </div>
 
     <!-- KPIs -->
     <div class="row g-4 mb-4">
-      <div class="col-md-4">
-        <div class="card p-3">
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
           <div class="d-flex align-items-center">
-            <i class="mdi mdi-account-group text-primary me-3"></i>
-            <div>
-              <h5 class="mb-0">24 Clientes Activos</h5>
-              <small>Últimos 30 días</small>
+            <i class="mdi mdi-account-group text-white me-3"></i>
+            <div class="flex-grow-1">
+              <h5 class="mb-0" id="totalClientes">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+              </h5>
+              <small>Clientes Registrados</small>
             </div>
+          </div>
+          <div class="mt-2">
+            <a href="ver_clientes.html" class="btn btn-sm btn-light w-100">
+              <i class="mdi mdi-eye"></i> Ver Clientes
+            </a>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card p-3">
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
           <div class="d-flex align-items-center">
-            <i class="mdi mdi-target text-success me-3"></i>
-            <div>
-              <h5 class="mb-0">+68 Estrategias</h5>
-              <small>En ejecución</small>
+            <i class="mdi mdi-lightbulb-on text-white me-3"></i>
+            <div class="flex-grow-1">
+              <h5 class="mb-0" id="totalEstrategias">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+              </h5>
+              <small>Estrategias Activas</small>
             </div>
+          </div>
+          <div class="mt-2">
+            <a href="ver_estrategias.html" class="btn btn-sm btn-light w-100">
+              <i class="mdi mdi-eye"></i> Ver Estrategias
+            </a>
           </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card p-3">
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
           <div class="d-flex align-items-center">
-            <i class="mdi mdi-chart-line text-warning me-3"></i>
-            <div>
-              <h5 class="mb-0">ROAS Promedio 8.5</h5>
-              <small>Global</small>
+            <i class="mdi mdi-chart-bar text-white me-3"></i>
+            <div class="flex-grow-1">
+              <h5 class="mb-0" id="totalMetricas">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+              </h5>
+              <small>Reportes de Métricas</small>
             </div>
+          </div>
+          <div class="mt-2">
+            <a href="ver_metricas.html" class="btn btn-sm btn-light w-100">
+              <i class="mdi mdi-eye"></i> Ver Métricas
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-tune text-white me-3"></i>
+            <div class="flex-grow-1">
+              <h5 class="mb-0" id="totalOptimizaciones">
+                <span class="spinner-border spinner-border-sm" role="status"></span>
+              </h5>
+              <small>Optimizaciones</small>
+            </div>
+          </div>
+          <div class="mt-2">
+            <a href="ver_optimizaciones.html" class="btn btn-sm btn-light w-100">
+              <i class="mdi mdi-eye"></i> Ver Optimizaciones
+            </a>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Imagen central -->
-    <div class="text-center">
-      <img src="https://via.placeholder.com/800x200?text=ADS+MANAGER+PRO" alt="Dashboard Banner" class="img-banner">
+    <!-- Acciones Rápidas -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card quick-actions p-3">
+          <h6 class="mb-2"><i class="mdi mdi-lightning-bolt"></i> Acciones Rápidas</h6>
+          <div class="d-grid gap-2">
+            <a href="clientes.html" class="btn btn-light btn-sm">
+              <i class="mdi mdi-account-plus"></i> Nuevo Cliente
+            </a>
+            <a href="estrategia.html" class="btn btn-light btn-sm">
+              <i class="mdi mdi-lightbulb-on"></i> Nueva Estrategia
+            </a>
+            <a href="metricas.html" class="btn btn-light btn-sm">
+              <i class="mdi mdi-upload"></i> Subir Métricas
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <!-- Imagen central -->
+        <div class="text-center">
+          <img src="https://via.placeholder.com/600x200/667eea/ffffff?text=ADS+MANAGER+PRO" alt="Dashboard Banner" class="img-banner">
+        </div>
+      </div>
     </div>
 
-    <!-- Botones de navegación -->
+    <!-- Módulos Principales -->
     <div class="row g-3 mt-4">
       <div class="col-md-4">
         <a href="clientes.html" class="btn btn-dashboard">
-          <i class="mdi mdi-account-box-outline me-2"></i> Clientes
+          <i class="mdi mdi-account-plus me-2"></i> Gestión de Clientes
+          <small class="d-block text-muted">Registrar y administrar clientes</small>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="ver_clientes.html" class="btn btn-dashboard">
+          <i class="mdi mdi-account-group me-2"></i> Ver Clientes
+          <small class="d-block text-muted">Lista completa de clientes</small>
         </a>
       </div>
       <div class="col-md-4">
         <a href="estrategia.html" class="btn btn-dashboard">
-          <i class="mdi mdi-lightbulb-on-outline me-2"></i> Estrategia
+          <i class="mdi mdi-lightbulb-on-outline me-2"></i> Nueva Estrategia
+          <small class="d-block text-muted">Crear estrategias de marketing</small>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="ver_estrategias.html" class="btn btn-dashboard">
+          <i class="mdi mdi-lightbulb-multiple-outline me-2"></i> Ver Estrategias
+          <small class="d-block text-muted">Gestionar estrategias existentes</small>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="metricas.html" class="btn btn-dashboard">
+          <i class="mdi mdi-chart-bar me-2"></i> Subir Métricas
+          <small class="d-block text-muted">Cargar datos de rendimiento</small>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a href="ver_metricas.html" class="btn btn-dashboard">
+          <i class="mdi mdi-chart-line me-2"></i> Ver Métricas
+          <small class="d-block text-muted">Analizar datos de campañas</small>
         </a>
       </div>
       <div class="col-md-4">
         <a href="optimizacion.html" class="btn btn-dashboard">
           <i class="mdi mdi-tune-variant me-2"></i> Optimización
+          <small class="d-block text-muted">Analizar y mejorar estrategias</small>
         </a>
       </div>
       <div class="col-md-4">
-        <a href="metricas.html" class="btn btn-dashboard">
-          <i class="mdi mdi-chart-bar me-2"></i> Métricas
+        <a href="ver_optimizaciones.html" class="btn btn-dashboard">
+          <i class="mdi mdi-tune me-2"></i> Ver Optimizaciones
+          <small class="d-block text-muted">Revisar análisis de mejoras</small>
         </a>
       </div>
       <div class="col-md-4">
         <a href="resultados.html" class="btn btn-dashboard">
           <i class="mdi mdi-trophy-outline me-2"></i> Resultados
+          <small class="d-block text-muted">Reportes finales y ROI</small>
         </a>
       </div>
     </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-5 pt-4 border-top border-secondary">
+      <p class="text-muted mb-0">
+        <i class="mdi mdi-chart-bar"></i> Ads Manager Pro - 
+        Gestión integral de campañas publicitarias
+      </p>
+    </div>
   </div>
+
+  <script>
+    // Cargar estadísticas dinámicas al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarEstadisticas();
+    });
+
+    function cargarEstadisticas() {
+      // Cargar clientes
+      fetch('obtener_clientes.php')
+        .then(response => response.json())
+        .then(data => {
+          const total = data.length;
+          const hoy = new Date().toISOString().split('T')[0];
+          const clientesHoy = data.filter(cliente => cliente.fecha === hoy).length;
+          
+          document.getElementById('totalClientes').innerHTML = `<strong>${total}</strong>`;
+          
+          // Agregar información adicional
+          const small = document.querySelector('#totalClientes').parentElement.querySelector('small');
+          if (clientesHoy > 0) {
+            small.innerHTML = `Clientes Registrados <br><span class="text-warning">${clientesHoy} nuevos hoy</span>`;
+          } else {
+            small.textContent = 'Clientes Registrados';
+          }
+        })
+        .catch(error => {
+          console.error('Error al cargar clientes:', error);
+          document.getElementById('totalClientes').innerHTML = '<span class="text-warning">Error</span>';
+        });
+
+      // Cargar estrategias
+      fetch('obtener_todas_estrategias.php')
+        .then(response => response.json())
+        .then(data => {
+          const total = data.length;
+          const hoy = new Date();
+          const estrategiasActivas = data.filter(estrategia => {
+            const fechaInicio = new Date(estrategia.fecha_inicio);
+            const fechaFin = new Date(estrategia.fecha_fin);
+            return hoy >= fechaInicio && hoy <= fechaFin;
+          }).length;
+          
+          document.getElementById('totalEstrategias').innerHTML = `<strong>${total}</strong>`;
+          
+          // Agregar información adicional
+          const small = document.querySelectorAll('.stats-card small')[1];
+          small.innerHTML = `Estrategias Totales <br><span class="text-success">${estrategiasActivas} activas</span>`;
+        })
+        .catch(error => {
+          console.error('Error al cargar estrategias:', error);
+          document.getElementById('totalEstrategias').innerHTML = '<span class="text-warning">Error</span>';
+        });
+
+      // Cargar métricas
+      fetch('obtener_metricas.php')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('totalMetricas').innerHTML = `<strong>${data.length}</strong>`;
+        })
+        .catch(error => {
+          console.error('Error al cargar métricas:', error);
+          document.getElementById('totalMetricas').innerHTML = '<span class="text-warning">Error</span>';
+        });
+
+      // Cargar optimizaciones
+      fetch('obtener_optimizaciones.php')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('totalOptimizaciones').innerHTML = `<strong>${data.length}</strong>`;
+        })
+        .catch(error => {
+          console.error('Error al cargar optimizaciones:', error);
+          document.getElementById('totalOptimizaciones').innerHTML = '<span class="text-warning">Error</span>';
+        });
+    }
+
+    // Función para refrescar estadísticas
+    function refrescarEstadisticas() {
+      // Mostrar spinners
+      document.getElementById('totalClientes').innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+      document.getElementById('totalEstrategias').innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+      document.getElementById('totalMetricas').innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+      document.getElementById('totalOptimizaciones').innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+      
+      // Recargar datos
+      cargarEstadisticas();
+    }
+  </script>
 </body>
 </html>

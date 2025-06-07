@@ -1,0 +1,40 @@
+[07-Jun-2025 13:37:11 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'root'@'localhost' (using password: NO) in /home/hellfhpr/public_html/proyecto/guarda_cliente.php:2
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guarda_cliente.php(2): mysqli->__construct()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guarda_cliente.php on line 2
+[07-Jun-2025 13:37:57 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'root'@'localhost' (using password: NO) in /home/hellfhpr/public_html/proyecto/guarda_cliente.php:2
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guarda_cliente.php(2): mysqli->__construct()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guarda_cliente.php on line 2
+[07-Jun-2025 14:33:39 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'hellfhpr_hello.optimizaciones' doesn't exist in /home/hellfhpr/public_html/proyecto/guardar_optimizacion.php:50
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_optimizacion.php(50): mysqli->prepare()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_optimizacion.php on line 50
+[07-Jun-2025 14:51:43 UTC] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /home/hellfhpr/public_html/proyecto/guardar_metricas.php:85
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_metricas.php(85): mysqli_stmt->bind_param()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_metricas.php on line 85
+[07-Jun-2025 14:51:55 UTC] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /home/hellfhpr/public_html/proyecto/guardar_metricas.php:85
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_metricas.php(85): mysqli_stmt->bind_param()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_metricas.php on line 85
+[07-Jun-2025 14:56:04 UTC] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /home/hellfhpr/public_html/proyecto/guardar_metricas.php:85
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_metricas.php(85): mysqli_stmt->bind_param()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_metricas.php on line 85
+[07-Jun-2025 15:02:52 UTC] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /home/hellfhpr/public_html/proyecto/guardar_metricas.php:85
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_metricas.php(85): mysqli_stmt->bind_param()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_metricas.php on line 85
+[07-Jun-2025 15:02:54 UTC] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in /home/hellfhpr/public_html/proyecto/guardar_metricas.php:85
+Stack trace:
+#0 /home/hellfhpr/public_html/proyecto/guardar_metricas.php(85): mysqli_stmt->bind_param()
+#1 {main}
+  thrown in /home/hellfhpr/public_html/proyecto/guardar_metricas.php on line 85

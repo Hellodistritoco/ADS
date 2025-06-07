@@ -7,54 +7,412 @@
   <link href="https://cdn.materialdesignicons.com/7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
   <style>
     body { background-color: #121212; color: white; }
-    .form-control, .form-select { background-color: #1e1e1e; color: white; border: none; }
+    .form-control, .form-select { background-color: #1e1e1e; color: white; border: 1px solid #444; }
     .form-label { color: #bbb; }
+    .readonly-field { background-color: #2a2a2a !important; color: #ccc; }
+    .card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+    }
+    .strategy-info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    
+    /* Estilos para el popup */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: #1e1e1e;
+      border: 2px solid #28a745;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      animation: popupSlide 0.3s ease-in-out;
+    }
+    @keyframes popupSlide {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .popup-icon {
+      font-size: 3rem;
+      color: #28a745;
+      margin-bottom: 15px;
+    }
+    .popup-title {
+      color: #28a745;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 <body>
   <div class="container py-5">
-    <h2><i class="mdi mdi-tune-variant"></i> Optimización</h2>
-    <form action="guardar_optimizacion.php" method="POST" class="row g-3 mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="mdi mdi-tune-variant"></i> Optimización de Estrategias</h2>
+      <div>
+        <a href="ver_estrategias.html" class="btn btn-secondary me-2">
+          <i class="mdi mdi-lightbulb-multiple-outline"></i> Ver Estrategias
+        </a>
+        <a href="index.html" class="btn btn-secondary">
+          <i class="mdi mdi-home"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Selectores de Cliente y Estrategia -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Seleccionar Cliente y Estrategia</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Cliente</label>
+            <select id="clienteSelect" class="form-select" onchange="cargarEstrategiasCliente()" required>
+              <option value="">Selecciona un cliente</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Estrategia</label>
+            <select id="estrategiaSelect" class="form-select" onchange="cargarDatosEstrategia()" required>
+              <option value="">Primero selecciona un cliente</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información de la Estrategia Seleccionada -->
+    <div id="infoEstrategia" class="strategy-info" style="display: none;">
+      <h5 class="text-white mb-3">
+        <i class="mdi mdi-lightbulb-on"></i> 
+        Información de la Estrategia
+      </h5>
+      <div class="row text-white">
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Cliente:</strong> <span id="nombreCliente"></span></p>
+          <p class="mb-1"><strong>Estrategia:</strong> <span id="nombreEstrategia"></span></p>
+          <p class="mb-1"><strong>Tipo:</strong> <span id="tipoEstrategia"></span></p>
+          <p class="mb-0"><strong>Plataforma:</strong> <span id="plataformaEstrategia"></span></p>
+        </div>
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Presupuesto:</strong> <span id="presupuestoEstrategia"></span></p>
+          <p class="mb-1"><strong>Audiencia:</strong> <span id="audienciaEstrategia"></span></p>
+          <p class="mb-1"><strong>Responsable:</strong> <span id="responsableEstrategia"></span></p>
+          <p class="mb-0"><strong>KPIs:</strong> <span id="kpisEstrategia"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de Optimización -->
+    <form id="optimizacionForm" action="guardar_optimizacion.php" method="POST" class="row g-3 mt-2" style="display: none;">
+      <!-- Campos ocultos para enviar los IDs -->
+      <input type="hidden" id="cliente_id" name="cliente_id">
+      <input type="hidden" id="estrategia_id" name="estrategia_id">
+      
+      <!-- Campos de solo lectura con información básica -->
       <div class="col-md-6">
-        <label class="form-label">Nombre del Cliente</label>
-        <input type="text" class="form-control" name="cliente" required>
+        <label class="form-label">Cliente</label>
+        <input type="text" id="clienteNombre" class="form-control readonly-field" name="cliente_nombre" readonly>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Nombre de la Estrategia</label>
-        <input type="text" class="form-control" name="nombre_estrategia" required>
+        <label class="form-label">Estrategia</label>
+        <input type="text" id="estrategiaNombre" class="form-control readonly-field" name="estrategia_nombre" readonly>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Tipo de Estrategia</label>
-        <input type="text" class="form-control" name="tipo_estrategia" required>
+
+      <!-- Campos del análisis de optimización -->
+      <div class="col-md-12">
+        <label class="form-label">Período de Análisis</label>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <input type="date" class="form-control" name="fecha_inicio_analisis" required>
+            <small class="text-muted">Fecha inicio del análisis</small>
+          </div>
+          <div class="col-md-6">
+            <input type="date" class="form-control" name="fecha_fin_analisis" required>
+            <small class="text-muted">Fecha fin del análisis</small>
+          </div>
+        </div>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Plataforma</label>
-        <input type="text" class="form-control" name="plataforma" required>
-      </div>
+
       <div class="col-md-12">
         <label class="form-label">¿Qué Funcionó Bien?</label>
-        <textarea class="form-control" name="funciono_bien" rows="2" required></textarea>
+        <textarea class="form-control" name="funciono_bien" rows="3" placeholder="Describe los elementos que tuvieron mejor rendimiento..." required></textarea>
       </div>
+      
       <div class="col-md-12">
         <label class="form-label">¿Qué No Funcionó?</label>
-        <textarea class="form-control" name="no_funciono" rows="2" required></textarea>
+        <textarea class="form-control" name="no_funciono" rows="3" placeholder="Identifica los elementos con bajo rendimiento..." required></textarea>
       </div>
+      
       <div class="col-md-12">
         <label class="form-label">Propuestas de Mejora</label>
-        <textarea class="form-control" name="propuestas_mejora" rows="2" required></textarea>
+        <textarea class="form-control" name="propuestas_mejora" rows="4" placeholder="Detalla las acciones específicas para optimizar la estrategia..." required></textarea>
       </div>
-      <div class="col-md-12">
+
+      <div class="col-md-6">
         <label class="form-label">Impacto Esperado</label>
-        <input type="text" class="form-control" name="impacto" required>
+        <select class="form-select" name="impacto_esperado" required>
+          <option value="">Selecciona el impacto</option>
+          <option value="Bajo (1-10%)">Bajo (1-10%)</option>
+          <option value="Medio (11-25%)">Medio (11-25%)</option>
+          <option value="Alto (26-50%)">Alto (26-50%)</option>
+          <option value="Muy Alto (+50%)">Muy Alto (+50%)</option>
+        </select>
       </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Prioridad de Implementación</label>
+        <select class="form-select" name="prioridad" required>
+          <option value="">Selecciona la prioridad</option>
+          <option value="Urgente">Urgente</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Métrica Principal a Mejorar</label>
+        <select class="form-select" name="metrica_principal" required>
+          <option value="">Selecciona la métrica</option>
+          <option value="CTR">CTR (Click Through Rate)</option>
+          <option value="CPC">CPC (Cost Per Click)</option>
+          <option value="CPA">CPA (Cost Per Acquisition)</option>
+          <option value="ROAS">ROAS (Return on Ad Spend)</option>
+          <option value="Conversiones">Conversiones</option>
+          <option value="Alcance">Alcance</option>
+          <option value="Engagement">Engagement</option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Responsable de Implementar</label>
+        <input type="text" class="form-control" name="responsable_implementacion" placeholder="Nombre del responsable" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Fecha Límite de Implementación</label>
+        <input type="date" class="form-control" name="fecha_limite" required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Presupuesto Adicional Requerido</label>
+        <input type="number" class="form-control" name="presupuesto_adicional" min="0" placeholder="0" required>
+      </div>
+
       <div class="col-md-12">
-        <label class="form-label">Clasificación</label>
-        <input type="text" class="form-control" name="clasificacion" required>
+        <label class="form-label">Observaciones Adicionales</label>
+        <textarea class="form-control" name="observaciones" rows="2" placeholder="Cualquier información adicional relevante..."></textarea>
       </div>
+
       <div class="col-12">
-        <button type="submit" class="btn btn-success"><i class="mdi mdi-content-save"></i> Guardar Optimización</button>
+        <button type="submit" class="btn btn-success btn-lg">
+          <i class="mdi mdi-content-save"></i> Guardar Optimización
+        </button>
       </div>
     </form>
+
+    <!-- Mensaje inicial -->
+    <div id="mensajeInicial" class="text-center py-5">
+      <i class="mdi mdi-tune-variant" style="font-size: 4rem; color: #666;"></i>
+      <h4 class="mt-3">Selecciona Cliente y Estrategia</h4>
+      <p class="text-muted">Para comenzar el análisis de optimización, primero selecciona un cliente y luego una de sus estrategias</p>
+    </div>
   </div>
+
+  <!-- Popup de éxito -->
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+      <div class="popup-icon">
+        <i class="mdi mdi-check-circle"></i>
+      </div>
+      <div class="popup-title">¡OPTIMIZACIÓN GUARDADA!</div>
+      <p class="text-light">El análisis de optimización ha sido registrado correctamente.</p>
+      <div class="popup-buttons mt-3">
+        <button type="button" class="btn btn-primary me-2" onclick="nuevaOptimizacion()">
+          <i class="mdi mdi-plus"></i> NUEVA OPTIMIZACIÓN
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="cerrarPopup()">
+          <i class="mdi mdi-close"></i> CERRAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let todosLosClientes = [];
+    let todasLasEstrategias = [];
+
+    // Cargar datos al inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarClientes();
+      
+      // Verificar parámetros de URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const clienteId = urlParams.get('cliente_id');
+      const estrategiaId = urlParams.get('estrategia_id');
+      
+      if (urlParams.get('exito') === '1') {
+        mostrarPopup();
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      // Preseleccionar si vienen parámetros
+      if (clienteId) {
+        setTimeout(() => {
+          document.getElementById('clienteSelect').value = clienteId;
+          cargarEstrategiasCliente();
+          
+          if (estrategiaId) {
+            setTimeout(() => {
+              document.getElementById('estrategiaSelect').value = estrategiaId;
+              cargarDatosEstrategia();
+            }, 500);
+          }
+        }, 500);
+      }
+    });
+
+    // Cargar lista de clientes
+    function cargarClientes() {
+      fetch('obtener_clientes.php')
+        .then(response => response.json())
+        .then(data => {
+          todosLosClientes = data;
+          const select = document.getElementById('clienteSelect');
+          
+          data.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = cliente.nombre_cliente;
+            select.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar clientes:', error);
+        });
+    }
+
+    // Cargar estrategias del cliente seleccionado
+    function cargarEstrategiasCliente() {
+      const clienteId = document.getElementById('clienteSelect').value;
+      const estrategiaSelect = document.getElementById('estrategiaSelect');
+      
+      // Limpiar estrategias
+      estrategiaSelect.innerHTML = '<option value="">Selecciona una estrategia</option>';
+      document.getElementById('infoEstrategia').style.display = 'none';
+      document.getElementById('optimizacionForm').style.display = 'none';
+      document.getElementById('mensajeInicial').style.display = 'block';
+      
+      if (!clienteId) {
+        estrategiaSelect.innerHTML = '<option value="">Primero selecciona un cliente</option>';
+        return;
+      }
+
+      // Cargar estrategias del cliente
+      fetch(`obtener_estrategias.php?cliente_id=${clienteId}`)
+        .then(response => response.json())
+        .then(data => {
+          todasLasEstrategias = data;
+          
+          if (data.length === 0) {
+            estrategiaSelect.innerHTML = '<option value="">No hay estrategias para este cliente</option>';
+            return;
+          }
+          
+          data.forEach(estrategia => {
+            const option = document.createElement('option');
+            option.value = estrategia.id;
+            option.textContent = `${estrategia.nombre_estrategia} (${estrategia.tipo_estrategia})`;
+            estrategiaSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar estrategias:', error);
+        });
+    }
+
+    // Cargar datos de la estrategia seleccionada
+    function cargarDatosEstrategia() {
+      const estrategiaId = document.getElementById('estrategiaSelect').value;
+      
+      if (!estrategiaId) {
+        document.getElementById('infoEstrategia').style.display = 'none';
+        document.getElementById('optimizacionForm').style.display = 'none';
+        document.getElementById('mensajeInicial').style.display = 'block';
+        return;
+      }
+
+      // Buscar la estrategia en el array
+      const estrategia = todasLasEstrategias.find(e => e.id == estrategiaId);
+      
+      if (estrategia) {
+        // Mostrar información de la estrategia
+        document.getElementById('nombreCliente').textContent = estrategia.nombre_cliente;
+        document.getElementById('nombreEstrategia').textContent = estrategia.nombre_estrategia;
+        document.getElementById('tipoEstrategia').textContent = estrategia.tipo_estrategia;
+        document.getElementById('plataformaEstrategia').textContent = estrategia.plataformas;
+        document.getElementById('presupuestoEstrategia').textContent = '$' + parseFloat(estrategia.presupuesto_estrategia).toLocaleString();
+        document.getElementById('audienciaEstrategia').textContent = estrategia.audiencia;
+        document.getElementById('responsableEstrategia').textContent = estrategia.responsable;
+        document.getElementById('kpisEstrategia').textContent = estrategia.kpis;
+        
+        // Llenar campos del formulario
+        document.getElementById('cliente_id').value = estrategia.cliente_id;
+        document.getElementById('estrategia_id').value = estrategia.id;
+        document.getElementById('clienteNombre').value = estrategia.nombre_cliente;
+        document.getElementById('estrategiaNombre').value = estrategia.nombre_estrategia;
+        
+        // Mostrar formulario
+        document.getElementById('infoEstrategia').style.display = 'block';
+        document.getElementById('optimizacionForm').style.display = 'block';
+        document.getElementById('mensajeInicial').style.display = 'none';
+      }
+    }
+
+    // Funciones del popup
+    function mostrarPopup() {
+      document.getElementById('popupOverlay').style.display = 'flex';
+    }
+
+    function cerrarPopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function nuevaOptimizacion() {
+      // Limpiar formulario
+      document.getElementById('optimizacionForm').reset();
+      document.getElementById('clienteSelect').value = '';
+      document.getElementById('estrategiaSelect').innerHTML = '<option value="">Primero selecciona un cliente</option>';
+      document.getElementById('infoEstrategia').style.display = 'none';
+      document.getElementById('optimizacionForm').style.display = 'none';
+      document.getElementById('mensajeInicial').style.display = 'block';
+      cerrarPopup();
+    }
+
+    // Cerrar popup con eventos
+    document.getElementById('popupOverlay').addEventListener('click', function(e) {
+      if (e.target === this) cerrarPopup();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarPopup();
+    });
+  </script>
 </body>
 </html>

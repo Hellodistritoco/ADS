@@ -7,69 +7,659 @@
   <link href="https://cdn.materialdesignicons.com/7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
   <style>
     body { background-color: #121212; color: white; }
-    .form-control, .form-select { background-color: #1e1e1e; color: white; border: none; }
+    .form-control, .form-select { background-color: #1e1e1e; color: white; border: 1px solid #444; }
     .form-label { color: #bbb; }
+    .readonly-field { background-color: #2a2a2a !important; color: #ccc; }
+    .card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+    }
+    .strategy-info {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
     table { color: white; }
-    thead { color: #0dcaf0; }
+    thead { color: #0dcaf0; background-color: #1e1e1e; }
+    .table-dark { background-color: #1e1e1e; }
+    .table-dark td, .table-dark th { border-color: #444; }
+    .csv-preview {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+    .upload-area {
+      border: 2px dashed #444;
+      border-radius: 10px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .upload-area:hover {
+      border-color: #0d6efd;
+      background-color: rgba(13, 110, 253, 0.1);
+    }
+    .upload-area.dragover {
+      border-color: #28a745;
+      background-color: rgba(40, 167, 69, 0.1);
+    }
+    
+    /* Estilos para el popup */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: #1e1e1e;
+      border: 2px solid #28a745;
+      border-radius: 15px;
+      padding: 40px;
+      text-align: center;
+      max-width: 450px;
+      animation: popupSlide 0.3s ease-in-out;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    @keyframes popupSlide {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .popup-icon {
+      font-size: 4rem;
+      color: #28a745;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    .popup-title {
+      color: #28a745;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .file-info {
+      background-color: #2a2a2a;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
   <div class="container py-5">
-    <h2><i class="mdi mdi-chart-bar"></i> Métricas</h2>
-    <form action="subir_csv.php" method="POST" enctype="multipart/form-data" class="mb-4">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">Nombre del Cliente</label>
-          <input type="text" class="form-control" name="cliente" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Nombre de la Estrategia</label>
-          <input type="text" class="form-control" name="estrategia" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Tipo de Estrategia</label>
-          <input type="text" class="form-control" name="tipo_estrategia" required>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Plataforma</label>
-          <input type="text" class="form-control" name="plataforma" required>
-        </div>
-        <div class="col-md-12">
-          <label class="form-label">Sube el archivo CSV</label>
-          <input type="file" class="form-control" name="archivo_csv" accept=".csv" required>
-        </div>
-        <div class="col-12">
-          <button type="submit" class="btn btn-primary"><i class="mdi mdi-upload"></i> Subir CSV</button>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="mdi mdi-chart-bar"></i> Métricas de Campañas</h2>
+      <div>
+        <a href="ver_estrategias.html" class="btn btn-secondary me-2">
+          <i class="mdi mdi-lightbulb-multiple-outline"></i> Ver Estrategias
+        </a>
+        <a href="index.html" class="btn btn-secondary">
+          <i class="mdi mdi-home"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Selectores de Cliente y Estrategia -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Seleccionar Cliente y Estrategia</h5>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Cliente</label>
+            <select id="clienteSelect" class="form-select" onchange="cargarEstrategiasCliente()" required>
+              <option value="">Selecciona un cliente</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Estrategia</label>
+            <select id="estrategiaSelect" class="form-select" onchange="cargarDatosEstrategia()" required>
+              <option value="">Primero selecciona un cliente</option>
+            </select>
+          </div>
         </div>
       </div>
-    </form>
+    </div>
 
-    <!-- Simulación de tabla renderizada (esto luego se hace dinámico con PHP) -->
-    <div class="table-responsive">
-      <table class="table table-dark table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Impresiones</th>
-            <th>Clicks</th>
-            <th>CTR</th>
-            <th>Conversiones</th>
-            <th>CPA</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>2025-06-01</td>
-            <td>10,000</td>
-            <td>500</td>
-            <td>5%</td>
-            <td>30</td>
-            <td>$26,000</td>
-          </tr>
-          <!-- Más filas dinámicamente con PHP -->
-        </tbody>
-      </table>
+    <!-- Información de la Estrategia Seleccionada -->
+    <div id="infoEstrategia" class="strategy-info" style="display: none;">
+      <h5 class="text-white mb-3">
+        <i class="mdi mdi-lightbulb-on"></i> 
+        Información de la Estrategia
+      </h5>
+      <div class="row text-white">
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Cliente:</strong> <span id="nombreCliente"></span></p>
+          <p class="mb-1"><strong>Estrategia:</strong> <span id="nombreEstrategia"></span></p>
+          <p class="mb-0"><strong>Tipo:</strong> <span id="tipoEstrategia"></span></p>
+        </div>
+        <div class="col-md-6">
+          <p class="mb-1"><strong>Plataforma:</strong> <span id="plataformaEstrategia"></span></p>
+          <p class="mb-1"><strong>Presupuesto:</strong> <span id="presupuestoEstrategia"></span></p>
+          <p class="mb-0"><strong>KPIs:</strong> <span id="kpisEstrategia"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de Subida de CSV -->
+    <div id="formularioMetricas" style="display: none;">
+      <form id="csvForm" enctype="multipart/form-data" class="mb-4">
+        <!-- Campos ocultos -->
+        <input type="hidden" id="cliente_id" name="cliente_id">
+        <input type="hidden" id="estrategia_id" name="estrategia_id">
+        <input type="hidden" id="cliente_nombre" name="cliente_nombre">
+        <input type="hidden" id="estrategia_nombre" name="estrategia_nombre">
+        <input type="hidden" id="tipo_estrategia" name="tipo_estrategia">
+        <input type="hidden" id="plataforma" name="plataforma">
+
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Subir Archivo CSV con Métricas</h5>
+            
+            <!-- Área de subida de archivo -->
+            <div id="uploadArea" class="upload-area" onclick="document.getElementById('csvFile').click()">
+              <div id="uploadContent">
+                <i class="mdi mdi-cloud-upload" style="font-size: 3rem; color: #0d6efd;"></i>
+                <h5 class="mt-2">Haz clic para seleccionar archivo CSV</h5>
+                <p class="text-muted">O arrastra y suelta tu archivo aquí</p>
+                <small class="text-muted">Formatos soportados: .csv</small>
+              </div>
+              <input type="file" id="csvFile" name="csv_file" accept=".csv" style="display: none;" onchange="procesarCSV()">
+            </div>
+
+            <!-- Información del archivo -->
+            <div id="fileInfo" style="display: none;" class="file-info">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="mdi mdi-file-table text-success"></i>
+                  <strong id="fileName"></strong>
+                  <span id="fileSize" class="text-muted"></span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarArchivo()">
+                  <i class="mdi mdi-close"></i>
+                </button>
+              </div>
+              <div class="mt-2">
+                <small><strong>Filas:</strong> <span id="fileRows"></span> | <strong>Columnas:</strong> <span id="fileCols"></span></small>
+              </div>
+            </div>
+
+            <!-- Configuración adicional -->
+            <div id="configSection" style="display: none;" class="mt-4">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Período de las Métricas</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <input type="date" class="form-control" name="fecha_inicio" required>
+                      <small class="text-muted">Fecha inicio</small>
+                    </div>
+                    <div class="col-6">
+                      <input type="date" class="form-control" name="fecha_fin" required>
+                      <small class="text-muted">Fecha fin</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Descripción de las Métricas</label>
+                  <textarea class="form-control" name="descripcion" rows="3" placeholder="Describe el contenido de estas métricas..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón de envío -->
+            <div id="submitSection" style="display: none;" class="mt-4">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="mdi mdi-upload"></i> Guardar Métricas
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Vista previa del CSV -->
+      <div id="csvPreview" style="display: none;" class="card">
+        <div class="card-body">
+          <h5 class="card-title">Vista Previa del CSV</h5>
+          <div class="csv-preview">
+            <div class="table-responsive">
+              <table id="previewTable" class="table table-dark table-striped table-bordered table-sm">
+                <thead id="previewHeader"></thead>
+                <tbody id="previewBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <small class="text-muted">Mostrando las primeras 10 filas</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje inicial -->
+    <div id="mensajeInicial" class="text-center py-5">
+      <i class="mdi mdi-chart-bar" style="font-size: 4rem; color: #666;"></i>
+      <h4 class="mt-3">Selecciona Cliente y Estrategia</h4>
+      <p class="text-muted">Para subir métricas, primero selecciona un cliente y luego una de sus estrategias</p>
     </div>
   </div>
+
+  <!-- Popup de éxito -->
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-content">
+      <div class="popup-icon">
+        <i class="mdi mdi-check-circle"></i>
+      </div>
+      <div class="popup-title">¡MÉTRICAS GUARDADAS EXITOSAMENTE!</div>
+      <p class="text-light mb-3">
+        Las métricas han sido procesadas y guardadas correctamente en la base de datos.
+      </p>
+      <div class="alert alert-success bg-success bg-opacity-25 border-success text-light mb-3">
+        <i class="mdi mdi-check-circle"></i>
+        <strong>Archivo procesado:</strong> <span id="archivoInfo"></span><br>
+        <strong>Cliente:</strong> <span id="clienteInfo"></span><br>
+        <strong>Estrategia:</strong> <span id="estrategiaInfo"></span>
+      </div>
+      <div class="popup-buttons mt-3">
+        <button type="button" class="btn btn-primary btn-lg me-2" onclick="verMetricas()">
+          <i class="mdi mdi-chart-line"></i> VER MÉTRICAS
+        </button>
+        <button type="button" class="btn btn-success me-2" onclick="nuevasMetricas()">
+          <i class="mdi mdi-plus"></i> NUEVAS MÉTRICAS
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="cerrarPopup()">
+          <i class="mdi mdi-close"></i> CERRAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let todosLosClientes = [];
+    let todasLasEstrategias = [];
+    let csvData = null;
+    let estrategiaSeleccionada = null;
+
+    // Cargar datos al inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarClientes();
+      
+      // Verificar parámetros de URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const clienteId = urlParams.get('cliente_id');
+      const estrategiaId = urlParams.get('estrategia_id');
+      
+      if (urlParams.get('exito') === '1') {
+        mostrarPopup();
+        // Guardar los IDs para usar en "Ver Métricas"
+        if (clienteId) document.getElementById('cliente_id').value = clienteId;
+        if (estrategiaId) document.getElementById('estrategia_id').value = estrategiaId;
+        // Limpiar la URL sin recargar la página
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      // Preseleccionar si vienen parámetros
+      if (clienteId) {
+        setTimeout(() => {
+          document.getElementById('clienteSelect').value = clienteId;
+          cargarEstrategiasCliente();
+          
+          if (estrategiaId) {
+            setTimeout(() => {
+              document.getElementById('estrategiaSelect').value = estrategiaId;
+              cargarDatosEstrategia();
+            }, 500);
+          }
+        }, 500);
+      }
+
+      // Configurar drag & drop
+      setupDragAndDrop();
+    });
+
+    // Cargar lista de clientes
+    function cargarClientes() {
+      fetch('obtener_clientes.php')
+        .then(response => response.json())
+        .then(data => {
+          todosLosClientes = data;
+          const select = document.getElementById('clienteSelect');
+          
+          data.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = cliente.nombre_cliente;
+            select.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar clientes:', error);
+        });
+    }
+
+    // Cargar estrategias del cliente seleccionado
+    function cargarEstrategiasCliente() {
+      const clienteId = document.getElementById('clienteSelect').value;
+      const estrategiaSelect = document.getElementById('estrategiaSelect');
+      
+      // Limpiar estrategias
+      estrategiaSelect.innerHTML = '<option value="">Selecciona una estrategia</option>';
+      document.getElementById('infoEstrategia').style.display = 'none';
+      document.getElementById('formularioMetricas').style.display = 'none';
+      document.getElementById('mensajeInicial').style.display = 'block';
+      
+      if (!clienteId) {
+        estrategiaSelect.innerHTML = '<option value="">Primero selecciona un cliente</option>';
+        return;
+      }
+
+      // Cargar estrategias del cliente
+      fetch(`obtener_estrategias.php?cliente_id=${clienteId}`)
+        .then(response => response.json())
+        .then(data => {
+          todasLasEstrategias = data;
+          
+          if (data.length === 0) {
+            estrategiaSelect.innerHTML = '<option value="">No hay estrategias para este cliente</option>';
+            return;
+          }
+          
+          data.forEach(estrategia => {
+            const option = document.createElement('option');
+            option.value = estrategia.id;
+            option.textContent = `${estrategia.nombre_estrategia} (${estrategia.tipo_estrategia})`;
+            estrategiaSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Error al cargar estrategias:', error);
+        });
+    }
+
+    // Cargar datos de la estrategia seleccionada
+    function cargarDatosEstrategia() {
+      const estrategiaId = document.getElementById('estrategiaSelect').value;
+      
+      if (!estrategiaId) {
+        document.getElementById('infoEstrategia').style.display = 'none';
+        document.getElementById('formularioMetricas').style.display = 'none';
+        document.getElementById('mensajeInicial').style.display = 'block';
+        return;
+      }
+
+      // Buscar la estrategia en el array
+      estrategiaSeleccionada = todasLasEstrategias.find(e => e.id == estrategiaId);
+      
+      if (estrategiaSeleccionada) {
+        // Mostrar información de la estrategia
+        document.getElementById('nombreCliente').textContent = estrategiaSeleccionada.nombre_cliente;
+        document.getElementById('nombreEstrategia').textContent = estrategiaSeleccionada.nombre_estrategia;
+        document.getElementById('tipoEstrategia').textContent = estrategiaSeleccionada.tipo_estrategia;
+        document.getElementById('plataformaEstrategia').textContent = estrategiaSeleccionada.plataformas;
+        document.getElementById('presupuestoEstrategia').textContent = '$' + parseFloat(estrategiaSeleccionada.presupuesto_estrategia).toLocaleString();
+        document.getElementById('kpisEstrategia').textContent = estrategiaSeleccionada.kpis;
+        
+        // Llenar campos ocultos del formulario
+        document.getElementById('cliente_id').value = estrategiaSeleccionada.cliente_id;
+        document.getElementById('estrategia_id').value = estrategiaSeleccionada.id;
+        document.getElementById('cliente_nombre').value = estrategiaSeleccionada.nombre_cliente;
+        document.getElementById('estrategia_nombre').value = estrategiaSeleccionada.nombre_estrategia;
+        document.getElementById('tipo_estrategia').value = estrategiaSeleccionada.tipo_estrategia;
+        document.getElementById('plataforma').value = estrategiaSeleccionada.plataformas;
+        
+        // Mostrar formulario
+        document.getElementById('infoEstrategia').style.display = 'block';
+        document.getElementById('formularioMetricas').style.display = 'block';
+        document.getElementById('mensajeInicial').style.display = 'none';
+      }
+    }
+
+    // Configurar drag and drop
+    function setupDragAndDrop() {
+      const uploadArea = document.getElementById('uploadArea');
+      
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+      });
+      
+      function highlight(e) {
+        uploadArea.classList.add('dragover');
+      }
+      
+      function unhighlight(e) {
+        uploadArea.classList.remove('dragover');
+      }
+      
+      uploadArea.addEventListener('drop', handleDrop, false);
+      
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+          document.getElementById('csvFile').files = files;
+          procesarCSV();
+        }
+      }
+    }
+
+    // Procesar archivo CSV
+    function procesarCSV() {
+      const fileInput = document.getElementById('csvFile');
+      const file = fileInput.files[0];
+      
+      if (!file) return;
+      
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Por favor selecciona un archivo CSV válido');
+        return;
+      }
+      
+      // Mostrar información del archivo
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+      document.getElementById('fileInfo').style.display = 'block';
+      
+      // Leer el archivo
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const csvText = e.target.result;
+        parsearCSV(csvText);
+      };
+      reader.readAsText(file);
+    }
+
+    // Parsear CSV y mostrar vista previa
+    function parsearCSV(csvText) {
+      // Dividir en líneas y procesar
+      const lines = csvText.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        alert('El archivo CSV debe tener al menos una fila de encabezados y una fila de datos');
+        return;
+      }
+      
+      // Procesar encabezados
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      
+      // Procesar datos
+      const rows = [];
+      for (let i = 1; i < Math.min(lines.length, 11); i++) { // Máximo 10 filas de preview
+        const row = lines[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+        rows.push(row);
+      }
+      
+      csvData = {
+        headers: headers,
+        totalRows: lines.length - 1,
+        previewRows: rows
+      };
+      
+      // Actualizar información del archivo
+      document.getElementById('fileRows').textContent = csvData.totalRows;
+      document.getElementById('fileCols').textContent = headers.length;
+      
+      // Mostrar vista previa
+      mostrarVistaPrevia();
+      
+      // Mostrar secciones adicionales
+      document.getElementById('configSection').style.display = 'block';
+      document.getElementById('submitSection').style.display = 'block';
+    }
+
+    // Mostrar vista previa de la tabla
+    function mostrarVistaPrevia() {
+      if (!csvData) return;
+      
+      const headerRow = document.getElementById('previewHeader');
+      const bodyRows = document.getElementById('previewBody');
+      
+      // Limpiar tabla
+      headerRow.innerHTML = '';
+      bodyRows.innerHTML = '';
+      
+      // Crear encabezados
+      const headerTr = document.createElement('tr');
+      csvData.headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerTr.appendChild(th);
+      });
+      headerRow.appendChild(headerTr);
+      
+      // Crear filas de datos
+      csvData.previewRows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        bodyRows.appendChild(tr);
+      });
+      
+      document.getElementById('csvPreview').style.display = 'block';
+    }
+
+    // Eliminar archivo seleccionado
+    function eliminarArchivo() {
+      document.getElementById('csvFile').value = '';
+      document.getElementById('fileInfo').style.display = 'none';
+      document.getElementById('csvPreview').style.display = 'none';
+      document.getElementById('configSection').style.display = 'none';
+      document.getElementById('submitSection').style.display = 'none';
+      csvData = null;
+    }
+
+    // Manejar envío del formulario
+    document.getElementById('csvForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (!csvData) {
+        alert('Por favor selecciona un archivo CSV');
+        return;
+      }
+      
+      const formData = new FormData(this);
+      
+      // Agregar datos del CSV
+      formData.append('csv_headers', JSON.stringify(csvData.headers));
+      formData.append('total_rows', csvData.totalRows);
+      
+      // Enviar datos
+      fetch('guardar_metricas.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        if (data.includes('Location:')) {
+          // Éxito - el archivo PHP redirige automáticamente
+          // Este código no debería ejecutarse normalmente
+          mostrarPopup();
+        } else {
+          alert('Error al guardar las métricas: ' + data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud');
+      });
+    });
+
+    // Funciones del popup
+    function mostrarPopup() {
+      // Llenar información del popup
+      const archivo = document.getElementById('csvFile').files[0];
+      if (archivo) {
+        document.getElementById('archivoInfo').textContent = archivo.name;
+      }
+      
+      const clienteNombre = document.getElementById('clienteNombre').value;
+      const estrategiaNombre = document.getElementById('estrategiaNombre').value;
+      
+      document.getElementById('clienteInfo').textContent = clienteNombre || 'No especificado';
+      document.getElementById('estrategiaInfo').textContent = estrategiaNombre || 'No especificado';
+      
+      document.getElementById('popupOverlay').style.display = 'flex';
+    }
+
+    function cerrarPopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function nuevasMetricas() {
+      // Limpiar formulario
+      document.getElementById('csvForm').reset();
+      eliminarArchivo();
+      cerrarPopup();
+    }
+
+    function verMetricas() {
+      const clienteId = document.getElementById('cliente_id').value;
+      const estrategiaId = document.getElementById('estrategia_id').value;
+      
+      if (clienteId && estrategiaId) {
+        window.location.href = `ver_metricas.html?cliente_id=${clienteId}&estrategia_id=${estrategiaId}`;
+      } else {
+        window.location.href = 'ver_metricas.html';
+      }
+    }
+
+    // Cerrar popup con eventos
+    document.getElementById('popupOverlay').addEventListener('click', function(e) {
+      if (e.target === this) cerrarPopup();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') cerrarPopup();
+    });
+  </script>
 </body>
 </html>

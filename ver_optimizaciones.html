@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ver Optimizaciones</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.materialdesignicons.com/7.2.96/css/materialdesignicons.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background-color: #121212; 
+      color: white; 
+    }
+    .card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+    }
+    .optimization-card {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.2s;
+    }
+    .optimization-card:hover {
+      transform: translateY(-2px);
+      border-color: #0d6efd;
+    }
+    .optimization-title {
+      color: #0dcaf0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .optimization-info {
+      color: #bbb;
+      margin: 5px 0;
+    }
+    .priority-badge {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .priority-urgente { background-color: #dc3545; color: white; }
+    .priority-alta { background-color: #fd7e14; color: white; }
+    .priority-media { background-color: #ffc107; color: black; }
+    .priority-baja { background-color: #6c757d; color: white; }
+    
+    .impact-badge {
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .impact-bajo { background-color: #6c757d; }
+    .impact-medio { background-color: #0dcaf0; color: black; }
+    .impact-alto { background-color: #198754; }
+    .impact-muy-alto { background-color: #28a745; animation: pulse 2s infinite; }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+    }
+    
+    .form-control, .form-select {
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      color: white;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: #2a2a2a;
+      border-color: #0d6efd;
+      color: white;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    .loading {
+      text-align: center;
+      padding: 50px;
+    }
+    .no-data {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+    }
+    .modal-content {
+      background-color: #1e1e1e;
+      border: 1px solid #444;
+    }
+    .alert-danger {
+      background-color: #2c1618;
+      border-color: #5a2328;
+      color: #f5c2c7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2><i class="mdi mdi-tune-variant"></i> Optimizaciones</h2>
+      <div>
+        <a href="optimizacion.html" class="btn btn-success me-2">
+          <i class="mdi mdi-plus"></i> Nueva Optimización
+        </a>
+        <a href="ver_estrategias.html" class="btn btn-secondary me-2">
+          <i class="mdi mdi-lightbulb-multiple-outline"></i> Estrategias
+        </a>
+        <a href="index.html" class="btn btn-secondary">
+          <i class="mdi mdi-home"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-tune text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="totalOptimizaciones">0</h5>
+              <small>Total Optimizaciones</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-clock-alert text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="optimizacionesUrgentes">0</h5>
+              <small>Urgentes</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-trending-up text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="impactoAlto">0</h5>
+              <small>Alto Impacto</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-cash text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="presupuestoTotal">$0</h5>
+              <small>Presupuesto Adicional</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros y búsqueda -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="input-group">
+              <input type="text" id="buscarOptimizacion" class="form-control" placeholder="Buscar por cliente o estrategia...">
+              <button class="btn btn-primary" type="button" onclick="buscarOptimizaciones()">
+                <i class="mdi mdi-magnify"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <select id="filtroPrioridad" class="form-select" onchange="filtrarOptimizaciones()">
+              <option value="">Todas las prioridades</option>
+              <option value="Urgente">Urgente</option>
+              <option value="Alta">Alta</option>
+              <option value="Media">Media</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="filtroImpacto" class="form-select" onchange="filtrarOptimizaciones()">
+              <option value="">Todos los impactos</option>
+              <option value="Muy Alto">Muy Alto</option>
+              <option value="Alto">Alto</option>
+              <option value="Medio">Medio</option>
+              <option value="Bajo">Bajo</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="filtroMetrica" class="form-select" onchange="filtrarOptimizaciones()">
+              <option value="">Todas las métricas</option>
+              <option value="CTR">CTR</option>
+              <option value="CPC">CPC</option>
+              <option value="CPA">CPA</option>
+              <option value="ROAS">ROAS</option>
+              <option value="Conversiones">Conversiones</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="filtroCliente" class="form-select" onchange="filtrarOptimizaciones()">
+              <option value="">Todos los clientes</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-3">Cargando optimizaciones...</p>
+    </div>
+
+    <!-- Lista de Optimizaciones -->
+    <div id="listaOptimizaciones">
+      <!-- Las optimizaciones se cargan aquí -->
+    </div>
+
+    <!-- Sin datos -->
+    <div id="sinDatos" class="no-data" style="display: none;">
+      <i class="mdi mdi-tune-variant" style="font-size: 4rem; color: #666;"></i>
+      <h4>No hay optimizaciones registradas</h4>
+      <p>Comienza creando tu primera optimización</p>
+      <a href="optimizacion.html" class="btn btn-primary">
+        <i class="mdi mdi-plus"></i> Crear Optimización
+      </a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let todasLasOptimizaciones = [];
+    let optimizacionesFiltradas = [];
+
+    // Cargar datos al inicializar
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarOptimizaciones();
+      
+      // Búsqueda en tiempo real
+      document.getElementById('buscarOptimizacion').addEventListener('input', function() {
+        buscarOptimizaciones();
+      });
+    });
+
+    // Cargar todas las optimizaciones desde la base de datos
+    function cargarOptimizaciones() {
+      fetch('obtener_optimizaciones.php')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Verificar si hay error en la respuesta
+          if (data.error) {
+            throw new Error(data.message || 'Error desconocido del servidor');
+          }
+          
+          todasLasOptimizaciones = data;
+          optimizacionesFiltradas = data;
+          
+          document.getElementById('loading').style.display = 'none';
+          
+          if (data.length === 0) {
+            document.getElementById('sinDatos').style.display = 'block';
+          } else {
+            calcularEstadisticas(data);
+            llenarFiltros(data);
+            mostrarOptimizaciones(data);
+          }
+        })
+        .catch(error => {
+          console.error('Error al cargar optimizaciones:', error);
+          document.getElementById('loading').style.display = 'none';
+          
+          // Mostrar error al usuario
+          const container = document.getElementById('listaOptimizaciones');
+          container.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+              <h4 class="alert-heading"><i class="mdi mdi-alert-circle"></i> Error al cargar datos</h4>
+              <p>No se pudieron cargar las optimizaciones desde la base de datos.</p>
+              <hr>
+              <p class="mb-0"><strong>Error:</strong> ${error.message}</p>
+              <button class="btn btn-outline-danger mt-2" onclick="cargarOptimizaciones()">
+                <i class="mdi mdi-refresh"></i> Reintentar
+              </button>
+            </div>
+          `;
+        });
+    }
+
+    // Calcular estadísticas
+    function calcularEstadisticas(optimizaciones) {
+      const total = optimizaciones.length;
+      const urgentes = optimizaciones.filter(opt => opt.prioridad === 'Urgente').length;
+      const altoImpacto = optimizaciones.filter(opt => 
+        opt.impacto_esperado && (opt.impacto_esperado.includes('Alto') || opt.impacto_esperado.includes('Muy Alto'))
+      ).length;
+      const presupuestoTotal = optimizaciones.reduce((sum, opt) => 
+        sum + parseFloat(opt.presupuesto_adicional || 0), 0
+      );
+
+      document.getElementById('totalOptimizaciones').textContent = total;
+      document.getElementById('optimizacionesUrgentes').textContent = urgentes;
+      document.getElementById('impactoAlto').textContent = altoImpacto;
+      document.getElementById('presupuestoTotal').textContent = '$' + presupuestoTotal.toLocaleString();
+    }
+
+    // Llenar filtros dinámicamente
+    function llenarFiltros(optimizaciones) {
+      // Llenar filtro de clientes
+      const clientes = [...new Set(optimizaciones.map(opt => opt.cliente_nombre).filter(nombre => nombre))];
+      const filtroCliente = document.getElementById('filtroCliente');
+      
+      // Limpiar opciones existentes (excepto la primera)
+      filtroCliente.innerHTML = '<option value="">Todos los clientes</option>';
+      
+      clientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente;
+        option.textContent = cliente;
+        filtroCliente.appendChild(option);
+      });
+    }
+
+    // Mostrar optimizaciones
+    function mostrarOptimizaciones(optimizaciones) {
+      const container = document.getElementById('listaOptimizaciones');
+      container.innerHTML = '';
+
+      optimizaciones.forEach(optimizacion => {
+        const div = document.createElement('div');
+        div.className = 'optimization-card';
+        
+        // Determinar clases para badges
+        const prioridadClass = `priority-${(optimizacion.prioridad || 'media').toLowerCase()}`;
+        let impactoClass = 'impact-bajo';
+        
+        if (optimizacion.impacto_esperado) {
+          if (optimizacion.impacto_esperado.includes('Muy Alto')) {
+            impactoClass = 'impact-muy-alto';
+          } else if (optimizacion.impacto_esperado.includes('Alto')) {
+            impactoClass = 'impact-alto';
+          } else if (optimizacion.impacto_esperado.includes('Medio')) {
+            impactoClass = 'impact-medio';
+          }
+        }
+
+        // Calcular días restantes
+        const fechaLimite = optimizacion.fecha_limite ? new Date(optimizacion.fecha_limite) : null;
+        const hoy = new Date();
+        let estadoFecha = '';
+        
+        if (fechaLimite) {
+          const diasRestantes = Math.ceil((fechaLimite - hoy) / (1000 * 60 * 60 * 24));
+          
+          if (diasRestantes < 0) {
+            estadoFecha = `<span class="text-danger"><i class="mdi mdi-alert"></i> Vencido por ${Math.abs(diasRestantes)} días</span>`;
+          } else if (diasRestantes <= 7) {
+            estadoFecha = `<span class="text-warning"><i class="mdi mdi-clock-alert"></i> ${diasRestantes} días restantes</span>`;
+          } else {
+            estadoFecha = `<span class="text-success"><i class="mdi mdi-clock"></i> ${diasRestantes} días restantes</span>`;
+          }
+        }
+
+        div.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="optimization-title">${optimizacion.cliente_nombre || 'Sin cliente'} - ${optimizacion.estrategia_nombre || 'Sin estrategia'}</div>
+            <div>
+              <span class="priority-badge ${prioridadClass} me-2">${optimizacion.prioridad || 'Media'}</span>
+              <span class="impact-badge ${impactoClass}">${optimizacion.impacto_esperado || 'No especificado'}</span>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="optimization-info">
+                <i class="mdi mdi-calendar-range"></i> 
+                <strong>Período:</strong> ${formatearFecha(optimizacion.fecha_inicio_analisis)} - ${formatearFecha(optimizacion.fecha_fin_analisis)}
+              </div>
+              <div class="optimization-info">
+                <i class="mdi mdi-chart-line"></i> 
+                <strong>Métrica Principal:</strong> ${optimizacion.metrica_principal || 'No especificada'}
+              </div>
+              <div class="optimization-info">
+                <i class="mdi mdi-account-tie"></i> 
+                <strong>Responsable:</strong> ${optimizacion.responsable_implementacion || 'No asignado'}
+              </div>
+              <div class="optimization-info">
+                <i class="mdi mdi-cash"></i> 
+                <strong>Presupuesto Adicional:</strong> $${parseFloat(optimizacion.presupuesto_adicional || 0).toLocaleString()}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="optimization-info">
+                <i class="mdi mdi-calendar-check"></i> 
+                <strong>Fecha Límite:</strong> ${formatearFecha(optimizacion.fecha_limite)}
+              </div>
+              <div class="optimization-info">
+                ${estadoFecha}
+              </div>
+              <div class="optimization-info mt-2">
+                <i class="mdi mdi-calendar-plus"></i> 
+                <strong>Creado:</strong> ${formatearFechaHora(optimizacion.fecha_creacion)}
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="text-success"><i class="mdi mdi-check-circle"></i> Qué funcionó bien:</h6>
+                <p class="optimization-info small">${optimizacion.funciono_bien || 'No especificado'}</p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="text-danger"><i class="mdi mdi-close-circle"></i> Qué no funcionó:</h6>
+                <p class="optimization-info small">${optimizacion.no_funciono || 'No especificado'}</p>
+              </div>
+            </div>
+            <div class="mt-2">
+              <h6 class="text-info"><i class="mdi mdi-lightbulb"></i> Propuestas de mejora:</h6>
+              <p class="optimization-info small">${optimizacion.propuestas_mejora || 'No especificadas'}</p>
+            </div>
+            ${optimizacion.observaciones ? `
+              <div class="mt-2">
+                <h6 class="text-warning"><i class="mdi mdi-note-text"></i> Observaciones:</h6>
+                <p class="optimization-info small">${optimizacion.observaciones}</p>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="mt-3 d-flex justify-content-between">
+            <div>
+              <button class="btn btn-sm btn-primary me-2" onclick="verDetalle(${optimizacion.id})">
+                <i class="mdi mdi-eye"></i> Ver Detalle
+              </button>
+              <button class="btn btn-sm btn-success me-2" onclick="marcarImplementado(${optimizacion.id})">
+                <i class="mdi mdi-check"></i> Implementado
+              </button>
+            </div>
+            <small class="text-muted align-self-end">ID: ${optimizacion.id}</small>
+          </div>
+        `;
+        
+        container.appendChild(div);
+      });
+    }
+
+    // Buscar optimizaciones
+    function buscarOptimizaciones() {
+      aplicarFiltros();
+    }
+
+    // Filtrar optimizaciones
+    function filtrarOptimizaciones() {
+      aplicarFiltros();
+    }
+
+    // Aplicar todos los filtros
+    function aplicarFiltros() {
+      const termino = document.getElementById('buscarOptimizacion').value.toLowerCase();
+      const prioridad = document.getElementById('filtroPrioridad').value;
+      const impacto = document.getElementById('filtroImpacto').value;
+      const metrica = document.getElementById('filtroMetrica').value;
+      const cliente = document.getElementById('filtroCliente').value;
+      
+      optimizacionesFiltradas = todasLasOptimizaciones.filter(opt => {
+        // Filtro de búsqueda
+        const coincideBusqueda = !termino || 
+          (opt.cliente_nombre && opt.cliente_nombre.toLowerCase().includes(termino)) ||
+          (opt.estrategia_nombre && opt.estrategia_nombre.toLowerCase().includes(termino)) ||
+          (opt.responsable_implementacion && opt.responsable_implementacion.toLowerCase().includes(termino));
+        
+        // Filtros específicos
+        const coincidePrioridad = !prioridad || opt.prioridad === prioridad;
+        const coincideImpacto = !impacto || (opt.impacto_esperado && opt.impacto_esperado.includes(impacto));
+        const coincideMetrica = !metrica || opt.metrica_principal === metrica;
+        const coincideCliente = !cliente || opt.cliente_nombre === cliente;
+        
+        return coincideBusqueda && coincidePrioridad && coincideImpacto && 
+               coincideMetrica && coincideCliente;
+      });
+      
+      mostrarOptimizaciones(optimizacionesFiltradas);
+      calcularEstadisticas(optimizacionesFiltradas);
+    }
+
+    // Formatear fecha
+    function formatearFecha(fecha) {
+      if (!fecha) return 'No especificada';
+      try {
+        const f = new Date(fecha + (fecha.includes('T') ? '' : 'T00:00:00'));
+        return f.toLocaleDateString('es-ES');
+      } catch (e) {
+        return 'Fecha inválida';
+      }
+    }
+
+    // Formatear fecha y hora
+    function formatearFechaHora(fechaHora) {
+      if (!fechaHora) return 'No especificada';
+      try {
+        const f = new Date(fechaHora);
+        return f.toLocaleDateString('es-ES') + ' ' + f.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+      } catch (e) {
+        return 'Fecha inválida';
+      }
+    }
+
+    // Funciones de acción
+    function verDetalle(optimizacionId) {
+      // Encontrar la optimización específica
+      const optimizacion = todasLasOptimizaciones.find(opt => opt.id == optimizacionId);
+      
+      if (optimizacion) {
+        // Crear modal con los detalles completos
+        const modalHTML = `
+          <div class="modal fade" id="modalDetalle" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title text-white">
+                    <i class="mdi mdi-eye"></i> Detalle de Optimización #${optimizacion.id}
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-white">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <h6 class="text-info">Información General</h6>
+                      <p><strong>Cliente:</strong> ${optimizacion.cliente_nombre || 'No especificado'}</p>
+                      <p><strong>Estrategia:</strong> ${optimizacion.estrategia_nombre || 'No especificada'}</p>
+                      <p><strong>Métrica Principal:</strong> ${optimizacion.metrica_principal || 'No especificada'}</p>
+                      <p><strong>Prioridad:</strong> <span class="priority-badge priority-${(optimizacion.prioridad || 'media').toLowerCase()}">${optimizacion.prioridad || 'Media'}</span></p>
+                      <p><strong>Impacto Esperado:</strong> ${optimizacion.impacto_esperado || 'No especificado'}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <h6 class="text-info">Fechas y Responsable</h6>
+                      <p><strong>Período de Análisis:</strong><br>
+                         ${formatearFecha(optimizacion.fecha_inicio_analisis)} - ${formatearFecha(optimizacion.fecha_fin_analisis)}</p>
+                      <p><strong>Fecha Límite:</strong> ${formatearFecha(optimizacion.fecha_limite)}</p>
+                      <p><strong>Responsable:</strong> ${optimizacion.responsable_implementacion || 'No asignado'}</p>
+                      <p><strong>Presupuesto Adicional:</strong> $${parseFloat(optimizacion.presupuesto_adicional || 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <hr>
+                  <div class="row">
+                    <div class="col-12">
+                      <h6 class="text-success"><i class="mdi mdi-check-circle"></i> Qué funcionó bien:</h6>
+                      <p class="mb-3">${optimizacion.funciono_bien || 'No especificado'}</p>
+                    </div>
+                    <div class="col-12">
+                      <h6 class="text-danger"><i class="mdi mdi-close-circle"></i> Qué no funcionó:</h6>
+                      <p class="mb-3">${optimizacion.no_funciono || 'No especificado'}</p>
+                    </div>
+                    <div class="col-12">
+                      <h6 class="text-info"><i class="mdi mdi-lightbulb"></i> Propuestas de mejora:</h6>
+                      <p class="mb-3">${optimizacion.propuestas_mejora || 'No especificadas'}</p>
+                    </div>
+                    ${optimizacion.observaciones ? `
+                      <div class="col-12">
+                        <h6 class="text-warning"><i class="mdi mdi-note-text"></i> Observaciones:</h6>
+                        <p class="mb-3">${optimizacion.observaciones}</p>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-success" onclick="marcarImplementado(${optimizacion.id})">
+                    <i class="mdi mdi-check"></i> Marcar como Implementado
+                  </button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Remover modal anterior si existe
+        const modalExistente = document.getElementById('modalDetalle');
+        if (modalExistente) {
+          modalExistente.remove();
+        }
+        
+        // Agregar modal al DOM
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Mostrar modal
+        const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+        modal.show();
+        
+        // Limpiar modal cuando se cierre
+        document.getElementById('modalDetalle').addEventListener('hidden.bs.modal', function () {
+          this.remove();
+        });
+      }
+    }
+
+    function marcarImplementado(optimizacionId) {
+      if (confirm('¿Confirmas que esta optimización ha sido implementada?')) {
+        // Hacer petición para marcar como implementada
+        fetch('marcar_implementado.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `optimizacion_id=${optimizacionId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert('Optimización marcada como implementada exitosamente');
+            // Recargar la lista
+            cargarOptimizaciones();
+            // Cerrar modal si está abierto
+            const modalElement = document.getElementById('modalDetalle');
+            if (modalElement) {
+              const modal = bootstrap.Modal.getInstance(modalElement);
+              if (modal) {
+                modal.hide();
+              }
+            }
+          } else {
+            alert('Error al marcar como implementada: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Optimización marcada como implementada (modo offline)');
+        });
+      }
+    }
+
+    // Función para exportar datos a CSV
+    function exportarCSV() {
+      if (optimizacionesFiltradas.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+      }
+
+      const headers = [
+        'ID', 'Cliente', 'Estrategia', 'Prioridad', 'Impacto Esperado', 
+        'Métrica Principal', 'Responsable', 'Presupuesto Adicional',
+        'Fecha Inicio Análisis', 'Fecha Fin Análisis', 'Fecha Límite',
+        'Funcionó Bien', 'No Funcionó', 'Propuestas de Mejora', 'Observaciones'
+      ];
+
+      let csvContent = headers.join(',') + '\n';
+
+      optimizacionesFiltradas.forEach(opt => {
+        const row = [
+          opt.id,
+          `"${(opt.cliente_nombre || '').replace(/"/g, '""')}"`,
+          `"${(opt.estrategia_nombre || '').replace(/"/g, '""')}"`,
+          `"${(opt.prioridad || '').replace(/"/g, '""')}"`,
+          `"${(opt.impacto_esperado || '').replace(/"/g, '""')}"`,
+          `"${(opt.metrica_principal || '').replace(/"/g, '""')}"`,
+          `"${(opt.responsable_implementacion || '').replace(/"/g, '""')}"`,
+          opt.presupuesto_adicional || 0,
+          opt.fecha_inicio_analisis || '',
+          opt.fecha_fin_analisis || '',
+          opt.fecha_limite || '',
+          `"${(opt.funciono_bien || '').replace(/"/g, '""')}"`,
+          `"${(opt.no_funciono || '').replace(/"/g, '""')}"`,
+          `"${(opt.propuestas_mejora || '').replace(/"/g, '""')}"`,
+          `"${(opt.observaciones || '').replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(',') + '\n';
+      });
+
+      // Crear y descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `optimizaciones_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+
+    // Función para imprimir reporte
+    function imprimirReporte() {
+      const ventanaImpresion = window.open('', '_blank');
+      
+      let contenidoHTML = `
+        <html>
+        <head>
+          <title>Reporte de Optimizaciones</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            .estadisticas { display: flex; justify-content: space-around; margin: 20px 0; }
+            .stat { text-align: center; padding: 10px; border: 1px solid #ddd; }
+            .optimizacion { border: 1px solid #ddd; margin: 10px 0; padding: 15px; }
+            .titulo { font-weight: bold; color: #0066cc; margin-bottom: 10px; }
+            .info { margin: 5px 0; }
+            .prioridad-urgente { background-color: #dc3545; color: white; padding: 2px 8px; border-radius: 4px; }
+            .prioridad-alta { background-color: #fd7e14; color: white; padding: 2px 8px; border-radius: 4px; }
+            .prioridad-media { background-color: #ffc107; color: black; padding: 2px 8px; border-radius: 4px; }
+            .prioridad-baja { background-color: #6c757d; color: white; padding: 2px 8px; border-radius: 4px; }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Optimizaciones</h1>
+          <p><strong>Fecha de generación:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
+          
+          <div class="estadisticas">
+            <div class="stat">
+              <h3>${document.getElementById('totalOptimizaciones').textContent}</h3>
+              <p>Total Optimizaciones</p>
+            </div>
+            <div class="stat">
+              <h3>${document.getElementById('optimizacionesUrgentes').textContent}</h3>
+              <p>Urgentes</p>
+            </div>
+            <div class="stat">
+              <h3>${document.getElementById('impactoAlto').textContent}</h3>
+              <p>Alto Impacto</p>
+            </div>
+            <div class="stat">
+              <h3>${document.getElementById('presupuestoTotal').textContent}</h3>
+              <p>Presupuesto Total</p>
+            </div>
+          </div>
+      `;
+
+      optimizacionesFiltradas.forEach(opt => {
+        contenidoHTML += `
+          <div class="optimizacion">
+            <div class="titulo">${opt.cliente_nombre || 'Sin cliente'} - ${opt.estrategia_nombre || 'Sin estrategia'}</div>
+            <div class="info"><strong>Prioridad:</strong> <span class="prioridad-${(opt.prioridad || 'media').toLowerCase()}">${opt.prioridad || 'Media'}</span></div>
+            <div class="info"><strong>Impacto Esperado:</strong> ${opt.impacto_esperado || 'No especificado'}</div>
+            <div class="info"><strong>Métrica Principal:</strong> ${opt.metrica_principal || 'No especificada'}</div>
+            <div class="info"><strong>Responsable:</strong> ${opt.responsable_implementacion || 'No asignado'}</div>
+            <div class="info"><strong>Presupuesto Adicional:</strong> ${parseFloat(opt.presupuesto_adicional || 0).toLocaleString()}</div>
+            <div class="info"><strong>Fecha Límite:</strong> ${formatearFecha(opt.fecha_limite)}</div>
+            <div class="info"><strong>Qué funcionó bien:</strong> ${opt.funciono_bien || 'No especificado'}</div>
+            <div class="info"><strong>Qué no funcionó:</strong> ${opt.no_funciono || 'No especificado'}</div>
+            <div class="info"><strong>Propuestas de mejora:</strong> ${opt.propuestas_mejora || 'No especificadas'}</div>
+            ${opt.observaciones ? `<div class="info"><strong>Observaciones:</strong> ${opt.observaciones}</div>` : ''}
+          </div>
+        `;
+      });
+
+      contenidoHTML += `
+        </body>
+        </html>
+      `;
+
+      ventanaImpresion.document.write(contenidoHTML);
+      ventanaImpresion.document.close();
+      ventanaImpresion.focus();
+      
+      setTimeout(() => {
+        ventanaImpresion.print();
+      }, 250);
+    }
+
+    // Agregar botones de exportar e imprimir al header
+    document.addEventListener('DOMContentLoaded', function() {
+      const headerButtons = document.querySelector('.d-flex.justify-content-between .btn-secondary').parentElement;
+      
+      // Botón de exportar CSV
+      const btnExportar = document.createElement('a');
+      btnExportar.className = 'btn btn-outline-success me-2';
+      btnExportar.innerHTML = '<i class="mdi mdi-download"></i> Exportar CSV';
+      btnExportar.onclick = exportarCSV;
+      
+      // Botón de imprimir
+      const btnImprimir = document.createElement('a');
+      btnImprimir.className = 'btn btn-outline-info me-2';
+      btnImprimir.innerHTML = '<i class="mdi mdi-printer"></i> Imprimir Reporte';
+      btnImprimir.onclick = imprimirReporte;
+      
+      // Insertar antes del botón Dashboard
+      const btnDashboard = document.querySelector('a[href="index.html"]');
+      btnDashboard.parentElement.insertBefore(btnExportar, btnDashboard);
+      btnDashboard.parentElement.insertBefore(btnImprimir, btnDashboard);
+    });
+  </script>
+</body>
+</html>
