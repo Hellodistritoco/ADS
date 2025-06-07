@@ -17,6 +17,8 @@ $cliente_nombre = $_POST['cliente_nombre'];
 $estrategia_nombre = $_POST['estrategia_nombre'];
 $tipo_estrategia = $_POST['tipo_estrategia'];
 $plataforma = $_POST['plataforma'];
+$etapa_funnel = $_POST['etapa_funnel'] ?? '';
+$tipo_metrica = $_POST['tipo_metrica'] ?? '';
 $fecha_inicio = $_POST['fecha_inicio'];
 $fecha_fin = $_POST['fecha_fin'];
 $descripcion = $_POST['descripcion'];
@@ -67,6 +69,8 @@ $sql_metricas = "INSERT INTO metricas (
     estrategia_nombre,
     tipo_estrategia,
     plataforma,
+    etapa_funnel,
+    tipo_metrica,
     fecha_inicio,
     fecha_fin,
     descripcion,
@@ -76,19 +80,21 @@ $sql_metricas = "INSERT INTO metricas (
     csv_headers,
     total_filas,
     fecha_creacion
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
 
 $stmt_metricas = $conexion->prepare($sql_metricas);
 $csv_headers_json = json_encode($csv_headers);
 
 $stmt_metricas->bind_param(
-    "iissssssssssi",
+    "iisssssssssssssi",
     $cliente_id,
     $estrategia_id,
     $cliente_nombre,
     $estrategia_nombre,
     $tipo_estrategia,
     $plataforma,
+    $etapa_funnel,
+    $tipo_metrica,
     $fecha_inicio,
     $fecha_fin,
     $descripcion,
@@ -146,7 +152,7 @@ $stmt_metricas->close();
 $stmt_datos->close();
 $conexion->close();
 
-// Redirigir con éxito
-header("Location: metricas.html?exito=1&cliente_id=$cliente_id&estrategia_id=$estrategia_id");
+// Redirigir con éxito - AQUÍ ESTÁ LA CORRECCIÓN
+header("Location: metricas.html?exito=1&cliente_id=$cliente_id&estrategia_id=$estrategia_id&etapa=$etapa_funnel&tipo=$tipo_metrica&archivo=" . urlencode($archivo_original));
 exit();
 ?>

@@ -4,7 +4,7 @@ include 'config.php';
 // Configurar header para JSON
 header('Content-Type: application/json');
 
-// Consultar todas las métricas
+// Consultar todas las métricas con las nuevas columnas
 $sql = "SELECT 
     m.*,
     c.nombre_cliente as cliente_nombre_db,
@@ -28,6 +28,8 @@ if ($result->num_rows > 0) {
             'estrategia_nombre' => $row['estrategia_nombre'] ?: $row['estrategia_nombre_db'],
             'tipo_estrategia' => $row['tipo_estrategia'],
             'plataforma' => $row['plataforma'],
+            'etapa_funnel' => $row['etapa_funnel'], // NUEVO
+            'tipo_metrica' => $row['tipo_metrica'], // NUEVO
             'fecha_inicio' => $row['fecha_inicio'],
             'fecha_fin' => $row['fecha_fin'],
             'descripcion' => $row['descripcion'],

@@ -79,6 +79,30 @@
       border-radius: 12px;
       font-size: 0.8rem;
     }
+    
+    /* Nuevos estilos para badges de etapas y métricas */
+    .etapa-badge {
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .etapa-TOFU { background-color: #ff6b6b; color: white; }
+    .etapa-MOFU { background-color: #feca57; color: black; }
+    .etapa-BOFU { background-color: #48cae4; color: black; }
+    
+    .metrica-badge {
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .metrica-Ecommerce { background-color: #e74c3c; color: white; }
+    .metrica-Prospecting { background-color: #3498db; color: white; }
+    .metrica-Leads { background-color: #2ecc71; color: white; }
+    .metrica-Remarketing { background-color: #9b59b6; color: white; }
+    .metrica-Interaccion { background-color: #f39c12; color: white; }
+    .metrica-default { background-color: #6c757d; color: white; }
   </style>
 </head>
 <body>
@@ -103,31 +127,128 @@
     <div id="mensajeExito" class="alert alert-success d-none" role="alert">
       <i class="mdi mdi-check-circle"></i>
       <strong>¡Métricas cargadas exitosamente!</strong> 
-      Aquí puedes ver todas las métricas de la estrategia seleccionada.
+      <span id="mensajeDetalle">Aquí puedes ver todas las métricas filtradas automáticamente.</span>
       <button type="button" class="btn-close" onclick="cerrarMensaje()"></button>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-chart-bar text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="totalMetricas">0</h5>
+              <small>Total Métricas</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-target text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="etapasActivas">0</h5>
+              <small>Etapas Activas</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-chart-line text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="tiposMetricas">0</h5>
+              <small>Tipos de Métricas</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card p-3">
+          <div class="d-flex align-items-center">
+            <i class="mdi mdi-calendar text-white me-3" style="font-size: 2rem;"></i>
+            <div>
+              <h5 class="mb-0" id="metricasHoy">0</h5>
+              <small>Subidas Hoy</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Filtros -->
     <div class="card mb-4">
       <div class="card-body">
+        <h6 class="card-title mb-3"><i class="mdi mdi-filter"></i> Filtros Avanzados</h6>
         <div class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Filtrar por Cliente</label>
             <select id="filtroCliente" class="form-select" onchange="filtrarMetricas()">
               <option value="">Todos los clientes</option>
             </select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Filtrar por Estrategia</label>
             <select id="filtroEstrategia" class="form-select" onchange="filtrarMetricas()">
               <option value="">Todas las estrategias</option>
             </select>
           </div>
-          <div class="col-md-4">
-            <label class="form-label">Filtrar por Plataforma</label>
+          <div class="col-md-2">
+            <label class="form-label">Etapa del Funnel</label>
+            <select id="filtroEtapa" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Todas las etapas</option>
+              <option value="TOFU">TOFU - Awareness</option>
+              <option value="MOFU">MOFU - Consideración</option>
+              <option value="BOFU">BOFU - Conversión</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Tipo de Métrica</label>
+            <select id="filtroTipoMetrica" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Todos los tipos</option>
+              <option value="Ecommerce">Ecommerce</option>
+              <option value="Prospecting">Prospecting</option>
+              <option value="Leads">Leads</option>
+              <option value="Remarketing">Remarketing</option>
+              <option value="Interaccion">Interacción</option>
+              <option value="Visitas al Perfil">Visitas al Perfil</option>
+              <option value="Mensajes a Whatsapp">Mensajes a WhatsApp</option>
+              <option value="Formularios de contacto">Formularios de contacto</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Plataforma</label>
             <select id="filtroPlataforma" class="form-select" onchange="filtrarMetricas()">
               <option value="">Todas las plataformas</option>
             </select>
+          </div>
+        </div>
+        
+        <!-- Búsqueda adicional -->
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="input-group">
+              <input type="text" id="buscarMetricas" class="form-control" placeholder="Buscar por descripción o archivo...">
+              <button class="btn btn-primary" type="button" onclick="buscarMetricas()">
+                <i class="mdi mdi-magnify"></i>
+              </button>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select id="filtroFecha" class="form-select" onchange="filtrarMetricas()">
+              <option value="">Cualquier fecha</option>
+              <option value="hoy">Subidas hoy</option>
+              <option value="semana">Última semana</option>
+              <option value="mes">Último mes</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-outline-warning w-100" onclick="limpiarFiltros()">
+              <i class="mdi mdi-filter-remove"></i> Limpiar Filtros
+            </button>
           </div>
         </div>
       </div>
@@ -190,12 +311,14 @@
     document.addEventListener('DOMContentLoaded', function() {
       cargarMetricas();
       
-      // Verificar si viene filtro por cliente/estrategia
+      // Verificar si viene filtro por cliente/estrategia/etapa/tipo
       const urlParams = new URLSearchParams(window.location.search);
       const clienteId = urlParams.get('cliente_id');
       const estrategiaId = urlParams.get('estrategia_id');
+      const etapaParam = urlParams.get('etapa');
+      const tipoParam = urlParams.get('tipo');
       
-      if (clienteId || estrategiaId) {
+      if (clienteId || estrategiaId || etapaParam || tipoParam) {
         setTimeout(() => {
           if (clienteId) {
             // Buscar el nombre del cliente por ID
@@ -211,20 +334,48 @@
               document.getElementById('filtroEstrategia').value = estrategia.estrategia_nombre;
             }
           }
+          if (etapaParam) {
+            // Aplicar filtro de etapa desde URL
+            document.getElementById('filtroEtapa').value = etapaParam;
+          }
+          if (tipoParam) {
+            // Aplicar filtro de tipo desde URL
+            document.getElementById('filtroTipoMetrica').value = tipoParam;
+          }
+          
           filtrarMetricas();
           
           // Mostrar mensaje de confirmación si viene de subida exitosa
           if (clienteId && estrategiaId) {
             setTimeout(() => {
+              // Personalizar mensaje según filtros aplicados
+              let mensajeDetalle = 'Aquí puedes ver las métricas filtradas automáticamente';
+              if (etapaParam && tipoParam) {
+                mensajeDetalle += ` para la etapa ${etapaParam} y tipo ${tipoParam}.`;
+              } else if (etapaParam) {
+                mensajeDetalle += ` para la etapa ${etapaParam}.`;
+              } else if (tipoParam) {
+                mensajeDetalle += ` para el tipo ${tipoParam}.`;
+              } else {
+                mensajeDetalle += ' de la estrategia seleccionada.';
+              }
+              
+              document.getElementById('mensajeDetalle').textContent = mensajeDetalle;
               document.getElementById('mensajeExito').classList.remove('d-none');
-              // Auto-ocultar después de 5 segundos
+              
+              // Auto-ocultar después de 6 segundos
               setTimeout(() => {
                 cerrarMensaje();
-              }, 5000);
+              }, 6000);
             }, 500);
           }
         }, 1000);
       }
+      
+      // Búsqueda en tiempo real
+      document.getElementById('buscarMetricas').addEventListener('input', function() {
+        buscarMetricas();
+      });
     });
 
     // Cargar todas las métricas
@@ -240,6 +391,7 @@
           if (data.length === 0) {
             document.getElementById('sinDatos').style.display = 'block';
           } else {
+            calcularEstadisticas(data);
             llenarFiltros(data);
             mostrarMetricas(data);
           }
@@ -251,11 +403,28 @@
         });
     }
 
+    // Calcular estadísticas
+    function calcularEstadisticas(metricas) {
+      const total = metricas.length;
+      const etapasUnicas = [...new Set(metricas.map(m => m.etapa_funnel).filter(e => e))];
+      const tiposUnicos = [...new Set(metricas.map(m => m.tipo_metrica).filter(t => t))];
+      
+      // Métricas subidas hoy
+      const hoy = new Date().toISOString().split('T')[0];
+      const metricasHoy = metricas.filter(m => m.fecha_creacion && m.fecha_creacion.startsWith(hoy)).length;
+
+      document.getElementById('totalMetricas').textContent = total;
+      document.getElementById('etapasActivas').textContent = etapasUnicas.length;
+      document.getElementById('tiposMetricas').textContent = tiposUnicos.length;
+      document.getElementById('metricasHoy').textContent = metricasHoy;
+    }
+
     // Llenar filtros dinámicamente
     function llenarFiltros(metricas) {
       // Filtro de clientes
-      const clientes = [...new Set(metricas.map(m => m.cliente_nombre))];
+      const clientes = [...new Set(metricas.map(m => m.cliente_nombre).filter(nombre => nombre))];
       const filtroCliente = document.getElementById('filtroCliente');
+      filtroCliente.innerHTML = '<option value="">Todos los clientes</option>';
       clientes.forEach(cliente => {
         const option = document.createElement('option');
         option.value = cliente;
@@ -264,8 +433,9 @@
       });
 
       // Filtro de estrategias
-      const estrategias = [...new Set(metricas.map(m => m.estrategia_nombre))];
+      const estrategias = [...new Set(metricas.map(m => m.estrategia_nombre).filter(nombre => nombre))];
       const filtroEstrategia = document.getElementById('filtroEstrategia');
+      filtroEstrategia.innerHTML = '<option value="">Todas las estrategias</option>';
       estrategias.forEach(estrategia => {
         const option = document.createElement('option');
         option.value = estrategia;
@@ -274,8 +444,9 @@
       });
 
       // Filtro de plataformas
-      const plataformas = [...new Set(metricas.map(m => m.plataforma))];
+      const plataformas = [...new Set(metricas.map(m => m.plataforma).filter(p => p))];
       const filtroPlataforma = document.getElementById('filtroPlataforma');
+      filtroPlataforma.innerHTML = '<option value="">Todas las plataformas</option>';
       plataformas.forEach(plataforma => {
         const option = document.createElement('option');
         option.value = plataforma;
@@ -294,27 +465,37 @@
         div.className = 'metrics-card';
         
         // Parsear headers para mostrar información
-        const headers = JSON.parse(metrica.csv_headers);
+        const headers = JSON.parse(metrica.csv_headers || '[]');
         const headersPreview = headers.slice(0, 5).join(', ') + (headers.length > 5 ? '...' : '');
+
+        // Determinar clases para badges
+        const etapaClass = `etapa-${metrica.etapa_funnel || 'default'}`;
+        const metricaClass = getMetricaClass(metrica.tipo_metrica);
 
         div.innerHTML = `
           <div class="d-flex justify-content-between align-items-start mb-3">
-            <div class="metrics-title">${metrica.cliente_nombre} - ${metrica.estrategia_nombre}</div>
+            <div class="metrics-title">${metrica.cliente_nombre || 'Sin cliente'} - ${metrica.estrategia_nombre || 'Sin estrategia'}</div>
             <div>
-              <span class="file-badge me-2">${metrica.total_filas} filas</span>
+              <span class="file-badge me-2">${metrica.total_filas || 0} filas</span>
               <span class="date-badge">${formatearFecha(metrica.fecha_creacion)}</span>
             </div>
+          </div>
+          
+          <!-- Badges de Etapa y Tipo de Métrica -->
+          <div class="mb-3">
+            ${metrica.etapa_funnel ? `<span class="etapa-badge ${etapaClass} me-2">${metrica.etapa_funnel}</span>` : ''}
+            ${metrica.tipo_metrica ? `<span class="metrica-badge ${metricaClass}">${metrica.tipo_metrica}</span>` : ''}
           </div>
           
           <div class="row">
             <div class="col-md-6">
               <div class="metrics-info">
                 <i class="mdi mdi-tag"></i> 
-                <strong>Tipo:</strong> ${metrica.tipo_estrategia}
+                <strong>Tipo:</strong> ${metrica.tipo_estrategia || 'No especificado'}
               </div>
               <div class="metrics-info">
                 <i class="mdi mdi-web"></i> 
-                <strong>Plataforma:</strong> ${metrica.plataforma}
+                <strong>Plataforma:</strong> ${metrica.plataforma || 'No especificada'}
               </div>
               <div class="metrics-info">
                 <i class="mdi mdi-calendar-range"></i> 
@@ -322,7 +503,7 @@
               </div>
               <div class="metrics-info">
                 <i class="mdi mdi-file-table"></i> 
-                <strong>Archivo:</strong> ${metrica.archivo_original}
+                <strong>Archivo:</strong> ${metrica.archivo_original || 'No especificado'}
               </div>
             </div>
             <div class="col-md-6">
@@ -365,23 +546,100 @@
         
         container.appendChild(div);
       });
+
+      // Mostrar mensaje si no hay resultados después del filtro
+      if (metricas.length === 0 && todasLasMetricas.length > 0) {
+        container.innerHTML = `
+          <div class="alert alert-warning text-center">
+            <i class="mdi mdi-filter-off" style="font-size: 2rem;"></i>
+            <h5 class="mt-2">No se encontraron métricas con los filtros aplicados</h5>
+            <p>Intenta ajustar los filtros o <button class="btn btn-link p-0" onclick="limpiarFiltros()">limpiar todos los filtros</button></p>
+          </div>
+        `;
+      }
+    }
+
+    // Obtener clase CSS para badge de métrica
+    function getMetricaClass(tipoMetrica) {
+      const classMap = {
+        'Ecommerce': 'metrica-Ecommerce',
+        'Prospecting': 'metrica-Prospecting',
+        'Leads': 'metrica-Leads',
+        'Remarketing': 'metrica-Remarketing',
+        'Interaccion': 'metrica-Interaccion',
+        'Visitas al Perfil': 'metrica-default',
+        'Mensajes a Whatsapp': 'metrica-default',
+        'Formularios de contacto': 'metrica-default'
+      };
+      return classMap[tipoMetrica] || 'metrica-default';
     }
 
     // Filtrar métricas
     function filtrarMetricas() {
       const cliente = document.getElementById('filtroCliente').value;
       const estrategia = document.getElementById('filtroEstrategia').value;
+      const etapa = document.getElementById('filtroEtapa').value;
+      const tipoMetrica = document.getElementById('filtroTipoMetrica').value;
       const plataforma = document.getElementById('filtroPlataforma').value;
+      const fecha = document.getElementById('filtroFecha').value;
+      const busqueda = document.getElementById('buscarMetricas').value.toLowerCase();
       
       metricasFiltradas = todasLasMetricas.filter(metrica => {
         const coincideCliente = !cliente || metrica.cliente_nombre === cliente;
         const coincideEstrategia = !estrategia || metrica.estrategia_nombre === estrategia;
+        const coincideEtapa = !etapa || metrica.etapa_funnel === etapa;
+        const coincideTipoMetrica = !tipoMetrica || metrica.tipo_metrica === tipoMetrica;
         const coincidePlataforma = !plataforma || metrica.plataforma === plataforma;
+        const coincideBusqueda = !busqueda || 
+          (metrica.descripcion && metrica.descripcion.toLowerCase().includes(busqueda)) ||
+          (metrica.archivo_original && metrica.archivo_original.toLowerCase().includes(busqueda));
         
-        return coincideCliente && coincideEstrategia && coincidePlataforma;
+        let coincideFecha = true;
+        if (fecha) {
+          const fechaCreacion = new Date(metrica.fecha_creacion);
+          const hoy = new Date();
+          
+          switch (fecha) {
+            case 'hoy':
+              coincideFecha = fechaCreacion.toDateString() === hoy.toDateString();
+              break;
+            case 'semana':
+              const semanaAtras = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000);
+              coincideFecha = fechaCreacion >= semanaAtras;
+              break;
+            case 'mes':
+              const mesAtras = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000);
+              coincideFecha = fechaCreacion >= mesAtras;
+              break;
+          }
+        }
+        
+        return coincideCliente && coincideEstrategia && coincideEtapa && 
+               coincideTipoMetrica && coincidePlataforma && coincideFecha && coincideBusqueda;
       });
       
       mostrarMetricas(metricasFiltradas);
+      calcularEstadisticas(metricasFiltradas);
+    }
+
+    // Buscar métricas
+    function buscarMetricas() {
+      filtrarMetricas();
+    }
+
+    // Limpiar todos los filtros
+    function limpiarFiltros() {
+      document.getElementById('filtroCliente').value = '';
+      document.getElementById('filtroEstrategia').value = '';
+      document.getElementById('filtroEtapa').value = '';
+      document.getElementById('filtroTipoMetrica').value = '';
+      document.getElementById('filtroPlataforma').value = '';
+      document.getElementById('filtroFecha').value = '';
+      document.getElementById('buscarMetricas').value = '';
+      
+      metricasFiltradas = todasLasMetricas;
+      mostrarMetricas(metricasFiltradas);
+      calcularEstadisticas(metricasFiltradas);
     }
 
     // Ver datos completos en modal
@@ -392,13 +650,13 @@
       metricaActual = metrica;
       
       document.getElementById('modalTitle').textContent = 
-        `Datos: ${metrica.cliente_nombre} - ${metrica.estrategia_nombre}`;
+        `Datos: ${metrica.cliente_nombre} - ${metrica.estrategia_nombre} (${metrica.etapa_funnel} - ${metrica.tipo_metrica})`;
       
       // Cargar datos del CSV
       fetch(`obtener_datos_csv.php?metrica_id=${metricaId}`)
         .then(response => response.json())
         .then(data => {
-          mostrarTablaCompleta(data, JSON.parse(metrica.csv_headers));
+          mostrarTablaCompleta(data, JSON.parse(metrica.csv_headers || '[]'));
           new bootstrap.Modal(document.getElementById('datosModal')).show();
         })
         .catch(error => {
@@ -438,20 +696,32 @@
 
     // Funciones de utilidad
     function formatearFecha(fecha) {
-      if (!fecha) return '';
-      const f = new Date(fecha + 'T00:00:00');
-      return f.toLocaleDateString('es-ES');
+      if (!fecha) return 'No especificada';
+      try {
+        const f = new Date(fecha + (fecha.includes('T') ? '' : 'T00:00:00'));
+        return f.toLocaleDateString('es-ES');
+      } catch (e) {
+        return 'Fecha inválida';
+      }
     }
 
     function formatearFechaHora(fechaHora) {
-      if (!fechaHora) return '';
-      const f = new Date(fechaHora);
-      return f.toLocaleDateString('es-ES') + ' ' + f.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+      if (!fechaHora) return 'No especificada';
+      try {
+        const f = new Date(fechaHora);
+        return f.toLocaleDateString('es-ES') + ' ' + f.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+      } catch (e) {
+        return 'Fecha inválida';
+      }
     }
 
     // Funciones de acción
     function descargarArchivo(ruta, nombreOriginal) {
-      window.open(`descargar_csv.php?archivo=${encodeURIComponent(ruta)}&nombre=${encodeURIComponent(nombreOriginal)}`, '_blank');
+      if (ruta && nombreOriginal) {
+        window.open(`descargar_csv.php?archivo=${encodeURIComponent(ruta)}&nombre=${encodeURIComponent(nombreOriginal)}`, '_blank');
+      } else {
+        alert('Información de archivo no disponible');
+      }
     }
 
     function verEstadisticas(metricaId) {

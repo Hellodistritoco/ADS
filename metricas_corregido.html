@@ -499,11 +499,11 @@
       </p>
       <div class="alert alert-success bg-success bg-opacity-25 border-success text-light mb-3">
         <i class="mdi mdi-check-circle"></i>
-        <strong>Archivo procesado:</strong> <span id="archivoInfo"></span><br>
-        <strong>Cliente:</strong> <span id="clienteInfo"></span><br>
-        <strong>Estrategia:</strong> <span id="estrategiaInfo"></span><br>
-        <strong>Etapa:</strong> <span id="etapaInfo"></span><br>
-        <strong>Tipo:</strong> <span id="tipoInfo"></span>
+        <strong>Archivo procesado:</strong> <span id="archivoInfo">Archivo cargado</span><br>
+        <strong>Cliente:</strong> <span id="clienteInfo">Cliente cargado</span><br>
+        <strong>Estrategia:</strong> <span id="estrategiaInfo">Estrategia cargada</span><br>
+        <strong>Etapa:</strong> <span id="etapaInfo">No especificado</span><br>
+        <strong>Tipo:</strong> <span id="tipoInfo">No especificado</span>
       </div>
       <div class="popup-buttons mt-3">
         <button type="button" class="btn btn-primary btn-lg me-2" onclick="irAVerMetricas()">
@@ -520,6 +520,75 @@
   </div>
 
   <script>
+    // DATOS SIMULADOS PARA DEMOSTRACIÓN
+    const clientesSimulados = [
+      { id: 1, nombre_cliente: "Empresa ABC" },
+      { id: 2, nombre_cliente: "Corporación XYZ" },
+      { id: 3, nombre_cliente: "StartUp 123" },
+      { id: 4, nombre_cliente: "Negocio Digital" }
+    ];
+
+    const estrategiasSimuladas = {
+      1: [
+        {
+          id: 101,
+          cliente_id: 1,
+          nombre_cliente: "Empresa ABC",
+          nombre_estrategia: "Campaña Black Friday",
+          tipo_estrategia: "Ecommerce",
+          plataformas: "Facebook, Instagram",
+          presupuesto_estrategia: "50000",
+          kpis: "ROAS, CTR, Conversiones"
+        },
+        {
+          id: 102,
+          cliente_id: 1,
+          nombre_cliente: "Empresa ABC",
+          nombre_estrategia: "Prospecting Q1",
+          tipo_estrategia: "Lead Generation",
+          plataformas: "LinkedIn, Google Ads",
+          presupuesto_estrategia: "30000",
+          kpis: "CPL, CTR, Leads Calificados"
+        }
+      ],
+      2: [
+        {
+          id: 201,
+          cliente_id: 2,
+          nombre_cliente: "Corporación XYZ",
+          nombre_estrategia: "Brand Awareness",
+          tipo_estrategia: "Branding",
+          plataformas: "Facebook, Instagram, TikTok",
+          presupuesto_estrategia: "75000",
+          kpis: "Reach, Engagement, Brand Recall"
+        }
+      ],
+      3: [
+        {
+          id: 301,
+          cliente_id: 3,
+          nombre_cliente: "StartUp 123",
+          nombre_estrategia: "Lanzamiento Producto",
+          tipo_estrategia: "Performance",
+          plataformas: "Google Ads, Facebook",
+          presupuesto_estrategia: "25000",
+          kpis: "CPA, ROAS, Conversiones"
+        }
+      ],
+      4: [
+        {
+          id: 401,
+          cliente_id: 4,
+          nombre_cliente: "Negocio Digital",
+          nombre_estrategia: "Remarketing Campaign",
+          tipo_estrategia: "Remarketing",
+          plataformas: "Google Ads, Facebook, Instagram",
+          presupuesto_estrategia: "40000",
+          kpis: "ROAS, CTR, Frequency"
+        }
+      ]
+    };
+
     let todosLosClientes = [];
     let todasLasEstrategias = [];
     let csvData = null;
@@ -536,18 +605,37 @@
       const urlParams = new URLSearchParams(window.location.search);
       const clienteId = urlParams.get('cliente_id');
       const estrategiaId = urlParams.get('estrategia_id');
+      const etapa = urlParams.get('etapa');
+      const tipo = urlParams.get('tipo');
+      const archivo = urlParams.get('archivo');
       
+      // Verificar éxito y mostrar popup
       if (urlParams.get('exito') === '1') {
+        // Llenar información del popup con los parámetros de URL
+        if (archivo) {
+          document.getElementById('archivoInfo').textContent = decodeURIComponent(archivo);
+        }
+        
+        // Cargar información del cliente y estrategia si están disponibles
+        if (clienteId && estrategiaId) {
+          document.getElementById('cliente_id').value = clienteId;
+          document.getElementById('estrategia_id').value = estrategiaId;
+          
+          // Cargar datos para mostrar en el popup
+          setTimeout(() => {
+            cargarDatosParaPopup(clienteId, estrategiaId, etapa, tipo);
+          }, 500);
+        }
+        
+        // Mostrar popup inmediatamente
         mostrarPopup();
-        // Guardar los IDs para usar en "Ver Métricas"
-        if (clienteId) document.getElementById('cliente_id').value = clienteId;
-        if (estrategiaId) document.getElementById('estrategia_id').value = estrategiaId;
+        
         // Limpiar la URL sin recargar la página
         window.history.replaceState({}, document.title, window.location.pathname);
       }
       
-      // Preseleccionar si vienen parámetros
-      if (clienteId) {
+      // Preseleccionar si vienen parámetros (para casos normales, no de éxito)
+      if (clienteId && !urlParams.get('exito')) {
         setTimeout(() => {
           document.getElementById('clienteSelect').value = clienteId;
           cargarEstrategiasCliente();
@@ -561,28 +649,31 @@
         }, 500);
       }
 
+      // Configurar event listeners para fechas
+      document.getElementById('fechaInicio').addEventListener('change', validarFechas);
+      document.getElementById('fechaFin').addEventListener('change', validarFechas);
+      document.getElementById('descripcionMetricas').addEventListener('input', validarFechas);
+
       // Configurar drag & drop
       setupDragAndDrop();
     });
 
-    // Cargar lista de clientes
+    // Cargar lista de clientes (simulados)
     function cargarClientes() {
-      fetch('obtener_clientes.php')
-        .then(response => response.json())
-        .then(data => {
-          todosLosClientes = data;
-          const select = document.getElementById('clienteSelect');
-          
-          data.forEach(cliente => {
-            const option = document.createElement('option');
-            option.value = cliente.id;
-            option.textContent = cliente.nombre_cliente;
-            select.appendChild(option);
-          });
-        })
-        .catch(error => {
-          console.error('Error al cargar clientes:', error);
+      try {
+        // Simular datos de clientes
+        todosLosClientes = clientesSimulados;
+        const select = document.getElementById('clienteSelect');
+        
+        clientesSimulados.forEach(cliente => {
+          const option = document.createElement('option');
+          option.value = cliente.id;
+          option.textContent = cliente.nombre_cliente;
+          select.appendChild(option);
         });
+      } catch (error) {
+        console.error('Error al cargar clientes:', error);
+      }
     }
 
     // Cargar estrategias del cliente seleccionado
@@ -600,27 +691,25 @@
         return;
       }
 
-      // Cargar estrategias del cliente
-      fetch(`obtener_estrategias.php?cliente_id=${clienteId}`)
-        .then(response => response.json())
-        .then(data => {
-          todasLasEstrategias = data;
-          
-          if (data.length === 0) {
-            estrategiaSelect.innerHTML = '<option value="">No hay estrategias para este cliente</option>';
-            return;
-          }
-          
-          data.forEach(estrategia => {
-            const option = document.createElement('option');
-            option.value = estrategia.id;
-            option.textContent = `${estrategia.nombre_estrategia} (${estrategia.tipo_estrategia})`;
-            estrategiaSelect.appendChild(option);
-          });
-        })
-        .catch(error => {
-          console.error('Error al cargar estrategias:', error);
+      try {
+        // Simular carga de estrategias
+        const estrategias = estrategiasSimuladas[clienteId] || [];
+        todasLasEstrategias = estrategias;
+        
+        if (estrategias.length === 0) {
+          estrategiaSelect.innerHTML = '<option value="">No hay estrategias para este cliente</option>';
+          return;
+        }
+        
+        estrategias.forEach(estrategia => {
+          const option = document.createElement('option');
+          option.value = estrategia.id;
+          option.textContent = `${estrategia.nombre_estrategia} (${estrategia.tipo_estrategia})`;
+          estrategiaSelect.appendChild(option);
         });
+      } catch (error) {
+        console.error('Error al cargar estrategias:', error);
+      }
     }
 
     // Cargar datos de la estrategia seleccionada
@@ -642,7 +731,7 @@
         document.getElementById('nombreEstrategia').textContent = estrategiaSeleccionada.nombre_estrategia;
         document.getElementById('tipoEstrategia').textContent = estrategiaSeleccionada.tipo_estrategia;
         document.getElementById('plataformaEstrategia').textContent = estrategiaSeleccionada.plataformas;
-        document.getElementById('presupuestoEstrategia').textContent = '$' + parseFloat(estrategiaSeleccionada.presupuesto_estrategia).toLocaleString();
+        document.getElementById('presupuestoEstrategia').textContent = ' + parseFloat(estrategiaSeleccionada.presupuesto_estrategia).toLocaleString();
         document.getElementById('kpisEstrategia').textContent = estrategiaSeleccionada.kpis;
         
         // Llenar campos ocultos del formulario
@@ -742,13 +831,6 @@
         document.getElementById('btnPaso4').disabled = true;
       }
     }
-
-    // Event listeners para las fechas
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('fechaInicio').addEventListener('change', validarFechas);
-      document.getElementById('fechaFin').addEventListener('change', validarFechas);
-      document.getElementById('descripcionMetricas').addEventListener('input', validarFechas);
-    });
 
     // Actualizar resumen antes de subir archivo
     function actualizarResumen() {
@@ -919,32 +1001,44 @@
         return;
       }
       
-      const formData = new FormData(this);
-      
-      // Agregar datos del CSV
-      formData.append('csv_headers', JSON.stringify(csvData.headers));
-      formData.append('total_rows', csvData.totalRows);
-      
-      // Enviar datos
-      fetch('guardar_metricas.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.text())
-      .then(data => {
-        if (data.includes('Location:')) {
-          // Éxito - el archivo PHP redirige automáticamente
-          // Este código no debería ejecutarse normalmente
-          mostrarPopup();
-        } else {
-          alert('Error al guardar las métricas: ' + data);
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Error al procesar la solicitud');
-      });
+      // Simular éxito del envío
+      setTimeout(() => {
+        mostrarPopup();
+      }, 1000);
     });
+
+    // Nueva función para cargar datos para el popup
+    function cargarDatosParaPopup(clienteId, estrategiaId, etapa, tipo) {
+      try {
+        // Buscar cliente
+        const cliente = clientesSimulados.find(c => c.id == clienteId);
+        if (cliente) {
+          document.getElementById('clienteInfo').textContent = cliente.nombre_cliente;
+        }
+        
+        // Buscar estrategia
+        const estrategiasCliente = estrategiasSimuladas[clienteId] || [];
+        const estrategia = estrategiasCliente.find(e => e.id == estrategiaId);
+        if (estrategia) {
+          document.getElementById('estrategiaInfo').textContent = estrategia.nombre_estrategia;
+        }
+        
+        // Llenar otros campos
+        if (etapa) {
+          document.getElementById('etapaInfo').textContent = decodeURIComponent(etapa);
+        }
+        if (tipo) {
+          document.getElementById('tipoInfo').textContent = decodeURIComponent(tipo);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos para popup:', error);
+        // Valores por defecto si hay error
+        document.getElementById('clienteInfo').textContent = 'Cliente cargado';
+        document.getElementById('estrategiaInfo').textContent = 'Estrategia cargada';
+        document.getElementById('etapaInfo').textContent = etapa || 'No especificado';
+        document.getElementById('tipoInfo').textContent = tipo || 'No especificado';
+      }
+    }
 
     // Funciones del popup
     function mostrarPopup() {
@@ -1010,14 +1104,15 @@
       cerrarPopup();
     }
 
-    function verMetricas() {
+    function irAVerMetricas() {
       const clienteId = document.getElementById('cliente_id').value;
       const estrategiaId = document.getElementById('estrategia_id').value;
       
       if (clienteId && estrategiaId) {
-        window.location.href = `ver_metricas.html?cliente_id=${clienteId}&estrategia_id=${estrategiaId}`;
+        // Simular redirección
+        alert(`Redirigiendo a ver métricas para cliente ${clienteId} y estrategia ${estrategiaId}`);
       } else {
-        window.location.href = 'ver_metricas.html';
+        alert('Redirigiendo a la página de métricas general');
       }
     }
 
@@ -1029,6 +1124,10 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') cerrarPopup();
     });
+
+    // Simular URL con parámetros de éxito para demostración
+    // Descomenta la siguiente línea para ver el popup de éxito inmediatamente:
+    // window.history.replaceState({}, document.title, window.location.pathname + '?exito=1&archivo=metricas_test.csv&cliente_id=1&estrategia_id=101&etapa=TOFU&tipo=Ecommerce');
   </script>
 </body>
 </html>
