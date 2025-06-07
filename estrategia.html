@@ -161,24 +161,23 @@
   </div>
 
   <!-- Popup de éxito -->
-  <div id="popupOverlay" class="popup-overlay">
-    <div class="popup-content">
-      <div class="popup-icon">
-        <i class="mdi mdi-check-circle"></i>
-      </div>
-      <div class="popup-title">¡ESTRATEGIA GUARDADA!</div>
-      <p class="text-light">La estrategia ha sido registrada correctamente.</p>
-      <div class="popup-buttons mt-3">
-        <button type="button" class="btn btn-primary me-2" onclick="crearNuevaEstrategia()">
-          <i class="mdi mdi-plus"></i> NUEVA ESTRATEGIA
-        </button>
-        <button type="button" class="btn btn-secondary" onclick="cerrarPopup()">
-          <i class="mdi mdi-close"></i> CERRAR
-        </button>
-      </div>
+ <div id="popupOverlay" class="popup-overlay">
+  <div class="popup-content">
+    <div class="popup-icon">
+      <i class="mdi mdi-check-circle"></i>
+    </div>
+    <div class="popup-title">¡ESTRATEGIA GUARDADA EXITOSAMENTE!</div>
+    <p class="text-light">La estrategia ha sido registrada correctamente. ¿Qué quieres hacer ahora?</p>
+    <div class="popup-buttons mt-3">
+      <button type="button" class="btn btn-primary me-2" onclick="irAVerEstrategias()">
+        <i class="mdi mdi-eye"></i> VER ESTRATEGIAS
+      </button>
+      <button type="button" class="btn btn-secondary" onclick="cerrarPopup()">
+        <i class="mdi mdi-close"></i> CERRAR
+      </button>
     </div>
   </div>
-
+</div>
   <script>
     // Variables globales
     let clientes = [];
@@ -266,7 +265,14 @@
       document.getElementById('objetivoCliente').value = '';
       cerrarPopup();
     }
-
+function irAVerEstrategias() {
+  const clienteId = document.getElementById('clienteSelect').value;
+  if (clienteId) {
+    window.location.href = `ver_estrategias.html?cliente_id=${clienteId}`;
+  } else {
+    window.location.href = 'ver_estrategias.html';
+  }
+}
     // Función para preseleccionar un cliente
     function preseleccionarCliente(clienteId) {
       const select = document.getElementById('clienteSelect');
